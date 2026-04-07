@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏅 Ironman California Training Plan</title>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --card: #1a1a22;
+    --card2: #22222e;
+    --border: #2e2e3e;
+    --red: #e8323c;
+    --red2: #ff4d57;
+    --orange: #f97316;
+    --blue: #3b82f6;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --purple: #a855f7;
+    --text: #f0f0f5;
+    --muted: #8888a0;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+  /* LOGIN */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+    background: radial-gradient(ellipse at top, #1a0a0f 0%, #0f0f13 60%);
+  }
+  .login-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 400px;
+    text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  }
+  .login-logo { font-size: 48px; margin-bottom: 8px; }
+  .login-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+  .login-box input {
+    transition: border-color 0.2s;
+  }
+  .login-box input:focus { border-color: var(--red); }
+  .login-btn {
+    width: 100%; padding: 14px; background: var(--red);
+    border: none; border-radius: 10px; color: white;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .login-btn:hover { background: var(--red2); }
+  .login-error { color: var(--red); font-size: 13px; margin-top: 10px; display: none; }
+
+  /* APP */
+  #app { display: none; }
+
+  /* HEADER */
+  .header {
+    background: var(--card); border-bottom: 1px solid var(--border);
+    padding: 16px 20px; position: sticky; top: 0; z-index: 100;
+  }
+  .header-top {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 900px; margin: 0 auto;
+  }
+  .header-title { font-size: 16px; font-weight: 700; }
+  .header-title span { color: var(--red); }
+  .header-race { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .logout-btn {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); padding: 6px 12px; font-size: 12px; cursor: pointer;
+  }
+  .logout-btn:hover { color: var(--text); border-color: var(--text); }
+
+  /* PROGRESS BAR */
+  .progress-bar-wrap {
+    max-width: 900px; margin: 12px auto 0;
+  }
+  .progress-stats {
+    display: flex; gap: 20px; font-size: 12px; color: var(--muted); margin-bottom: 6px;
+  }
+  .progress-stats strong { color: var(--text); }
+  .progress-track {
+    background: var(--bg); border-radius: 999px; height: 6px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--red), var(--orange));
+    transition: width 0.4s ease;
+  }
+
+  /* TABS */
+  .tabs {
+    max-width: 900px; margin: 0 auto;
+    display: flex; gap: 4px; padding: 16px 20px 0;
+  }
+  .tab-btn {
+    background: none; border: none; padding: 8px 16px;
+    color: var(--muted); font-size: 14px; font-weight: 500;
+    border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s;
+  }
+  .tab-btn.active { color: var(--text); border-color: var(--red); }
+
+  /* CONTENT */
+  .content { max-width: 900px; margin: 0 auto; padding: 20px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* WEEK NAVIGATOR */
+  .week-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; gap: 12px;
+  }
+  .week-nav-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); padding: 8px 16px; border-radius: 8px;
+    font-size: 14px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .week-nav-btn:hover { border-color: var(--red); color: var(--red); }
+  .week-nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .week-info { text-align: center; flex: 1; }
+  .week-num { font-size: 18px; font-weight: 700; }
+  .week-phase { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .week-note {
+    background: #1a1500; border: 1px solid #3a3000; border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; color: #d4b800;
+    margin-bottom: 16px; display: none;
+  }
+  .week-hrs {
+    font-size: 12px; color: var(--muted); text-align: right;
+    margin-bottom: 12px;
+  }
+  .week-hrs strong { color: var(--orange); }
+
+  /* TODAY JUMP */
+  .today-btn {
+    background: var(--card2); border: 1px solid var(--border);
+    color: var(--muted); padding: 6px 12px; border-radius: 8px;
+    font-size: 12px; cursor: pointer;
+  }
+  .today-btn:hover { color: var(--text); }
+
+  /* DAY CARDS */
+  .day-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; margin-bottom: 10px; overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .day-card.today { border-color: var(--orange); }
+  .day-card.completed { border-color: #1e3a1e; }
+  .day-card-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; cursor: pointer;
+  }
+  .day-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; font-size: 12px;
+  }
+  .day-check.done { background: var(--green); border-color: var(--green); color: white; }
+  .day-date { font-size: 12px; color: var(--muted); width: 80px; flex-shrink: 0; }
+  .day-name { font-weight: 600; font-size: 15px; flex-shrink: 0; width: 30px; }
+  .type-badge {
+    font-size: 11px; font-weight: 600; padding: 3px 8px;
+    border-radius: 999px; flex-shrink: 0;
+  }
+  .day-summary { font-size: 13px; color: var(--muted); flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .day-chevron { color: var(--muted); font-size: 12px; flex-shrink: 0; transition: transform 0.2s; }
+  .day-card.open .day-chevron { transform: rotate(180deg); }
+  .day-detail {
+    display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 12px;
+  }
+  .day-card.open .day-detail { display: block; }
+  .detail-section { margin-bottom: 10px; }
+  .detail-section:last-child { margin-bottom: 0; }
+  .detail-label {
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  .detail-text { font-size: 14px; line-height: 1.6; color: #d0d0e0; }
+  .today-badge {
+    background: var(--orange); color: black; font-size: 10px;
+    font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+  }
+
+  /* TYPE BADGE COLORS */
+  .type-swim { background: #0c2a4a; color: #60b0ff; }
+  .type-bike { background: #1a2a00; color: #8acc20; }
+  .type-run { background: #2a1500; color: #ff8c20; }
+  .type-str { background: #2a002a; color: #cc80ff; }
+  .type-rest { background: #1a1a1a; color: #888; }
+  .type-brick { background: #1a1a00; color: #ffcc00; }
+  .type-mixed { background: #001a2a; color: #40c0c0; }
+
+  /* PHASE CARDS */
+  .phase-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; margin-bottom: 12px;
+  }
+  .phase-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .phase-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .phase-name { font-size: 16px; font-weight: 700; }
+  .phase-meta { font-size: 12px; color: var(--muted); margin-left: auto; }
+  .phase-focus { font-size: 13px; color: #c0c0d8; line-height: 1.5; margin-bottom: 10px; }
+  .phase-milestones {
+    background: var(--bg); border-radius: 8px; padding: 10px 12px;
+    font-size: 12px; color: var(--muted);
+  }
+  .phase-milestones strong { color: var(--text); }
+
+  /* ZONE TABLE */
+  .zone-table { width: 100%; border-collapse: collapse; }
+  .zone-table th {
+    text-align: left; padding: 10px 12px; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--muted); border-bottom: 1px solid var(--border);
+  }
+  .zone-table td {
+    padding: 12px; font-size: 13px; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .zone-table tr:last-child td { border-bottom: none; }
+  .zone-badge {
+    font-weight: 700; font-size: 14px; padding: 4px 10px;
+    border-radius: 6px; display: inline-block;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .login-box { padding: 32px 24px; }
+    .day-date { display: none; }
+    .progress-stats { flex-wrap: wrap; gap: 8px; }
+    .tabs { padding: 12px 12px 0; overflow-x: auto; }
+    .tab-btn { white-space: nowrap; }
+    .content { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🏅</div>
+    <div class="login-title">Ironman California</div>
+    <div class="login-sub">29-Week Training Plan · Race Day Oct 18, 2026</div>
+    <div style="position:relative;margin-bottom:12px;">
+      <input type="password" id="pw-input" placeholder="Enter password"
+        autocorrect="off" autocapitalize="none" autocomplete="off" spellcheck="false"
+        style="width:100%;padding:14px 44px 14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;outline:none;" />
+      <button onclick="togglePw()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;" id="pw-eye">👁</button>
+    </div>
+    <button class="login-btn" onclick="tryLogin()">Access Training Plan</button>
+    <div class="login-error" id="login-error">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-title">🏅 <span>Ironman California</span> · Training Plan</div>
+        <div class="header-race">Race Day: Sunday, October 18, 2026 · Goal: Sub 11 Hours</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Lock</button>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-stats">
+        <div><strong id="stat-done">0</strong> days done</div>
+        <div><strong id="stat-left">0</strong> remaining</div>
+        <div><strong id="stat-pct">0%</strong> complete</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('plan', this)">📅 Training Plan</button>
+    <button class="tab-btn" onclick="switchTab('phases', this)">📊 Phases</button>
+    <button class="tab-btn" onclick="switchTab('zones', this)">⚡ Zones</button>
+  </div>
+
+  <div class="content">
+    <!-- PLAN TAB -->
+    <div id="tab-plan" class="tab-panel active">
+      <div class="week-nav">
+        <button class="week-nav-btn" id="prev-btn" onclick="changeWeek(-1)">← Prev</button>
+        <div class="week-info">
+          <div class="week-num" id="week-num">Week 1</div>
+          <div class="week-phase" id="week-phase"></div>
+        </div>
+        <button class="week-nav-btn" id="today-center" onclick="goToToday()">Today</button>
+        <button class="week-nav-btn" id="next-btn" onclick="changeWeek(1)">Next →</button>
+      </div>
+      <div class="week-note" id="week-note"></div>
+      <div class="week-hrs" id="week-hrs"></div>
+      <div id="days-container"></div>
+    </div>
+
+    <!-- PHASES TAB -->
+    <div id="tab-phases" class="tab-panel">
+      <div id="phases-container"></div>
+    </div>
+
+    <!-- ZONES TAB -->
+    <div id="tab-zones" class="tab-panel">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+        <table class="zone-table">
+          <thead>
+            <tr>
+              <th>Zone</th><th>Name</th><th>Feel / Talk Test</th><th>Approx HR</th><th>When Used</th>
+            </tr>
+          </thead>
+          <tbody id="zone-tbody"></tbody>
+        </table>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:13px;color:var(--muted);">
+        <strong style="color:var(--text);">Key principle:</strong> 80%+ of all sessions should be Z1–Z2. If in doubt, go easier.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = "jkl;'";
+const TRAINING_DATA = [{"checked": true, "date": "Mon Mar 23, 2026", "day": "Mon", "wk": "Wk 1", "phase": "P1 · Foundation", "type": "Swim+Str", "detail": "DRILL SWIM 875y — WU 200y easy. 8×50y drill rotation (catch-up / fingertip drag / high elbow / full free) 30sec rest. CD 75y easy. Today is technique only — no effort. One cue per rep: exhale fully underwater, then high elbow catch, then long reach forward.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "All Z2. Learn the feel of each discipline. Book your bike fit this week.", "wkHrs": "7.2h"}, {"checked": true, "date": "Tue Mar 24, 2026", "day": "Tue", "wk": "Wk 1", "phase": "P1 · Foundation", "type": "Swim+Bike", "detail": "Short swim 550y — 10×55y with 20sec rest. Drill focus: catch-up drill on odd reps, full freestyle on even. Technique day.\nEasy ride 60min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "All Z2. Learn the feel of each discipline. Book your bike fit this week.", "wkHrs": ""}, {"checked": true, "date": "Wed Mar 25, 2026", "day": "Wed", "wk": "Wk 1", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 875y — 8×100y with 30sec rest. Go easy on rep 1 — find a sustainable rhythm. If you need to stop mid-100y, rest and go again. Goal is completing each 100y, not speed.\n35min easy run @ Z2. Conversational pace the entire time.", "weekNote": "All Z2. Learn the feel of each discipline. Book your bike fit this week.", "wkHrs": ""}, {"checked": true, "date": "Thu Mar 26, 2026", "day": "Thu", "wk": "Wk 1", "phase": "P1 · Foundation", "type": "Bike+Str", "detail": "Easy ride 45min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: squats, Romanian deadlifts, Bulgarian split squats, single-leg press, walking lunges, hip thrust, calf raises, Copenhagen plank. Moderate weight — don't trash legs before tomorrow's session.", "weekNote": "All Z2. Learn the feel of each discipline. Book your bike fit this week.", "wkHrs": ""}, {"checked": true, "date": "Fri Mar 27, 2026", "day": "Fri", "wk": "Wk 1", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 650y — 12×50y with 25sec rest. Back to 50y intervals — drill focus. Every other rep do a drill: catch-up drill on odd reps, full freestyle on even reps.\n20min easy run @ Z2.", "weekNote": "All Z2. Learn the feel of each discipline. Book your bike fit this week.", "wkHrs": ""}, {"checked": true, "date": "Sat Mar 28, 2026", "day": "Sat", "wk": "Wk 1", "phase": "P1 · Foundation", "type": "Run", "detail": "Long run 50min @ Z2 — conversational pace the entire time.", "weekNote": "All Z2. Learn the feel of each discipline. Book your bike fit this week.", "wkHrs": ""}, {"checked": true, "date": "Sun Mar 29, 2026", "day": "Sun", "wk": "Wk 1", "phase": "P1 · Foundation", "type": "Long Ride", "detail": "Long ride 90min @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "All Z2. Learn the feel of each discipline. Book your bike fit this week.", "wkHrs": ""}, {"checked": true, "date": "Mon Mar 30, 2026", "day": "Mon", "wk": "Wk 2", "phase": "P1 · Foundation", "type": "Swim+Str", "detail": "DRILL SWIM 975y — WU 200y easy. 10×50y: odds = catch-up drill, evens = full free holding that same long stroke. 25sec rest. 175y pull buoy to feel forearm pressure. CD 100y. Focus: long stroke, reach past your head before the catch.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "All Z2. Target first 400m continuous swim on Wednesday.", "wkHrs": "8.5h"}, {"checked": true, "date": "Tue Mar 31, 2026", "day": "Tue", "wk": "Wk 2", "phase": "P1 · Foundation", "type": "Swim+Bike", "detail": "Short swim 550y — 11×55y with 18sec rest. Fingertip drag drill every 3rd rep. Build water feel.\nEasy ride 75min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "All Z2, try to establish routine as this is the schedule going forward", "wkHrs": ""}, {"checked": true, "date": "Wed Apr 1, 2026", "day": "Wed", "wk": "Wk 2", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1100y — try 175y continuous, rest 60sec, repeat ×4, then 4×100y with 25sec rest. First continuous target is 175y — if you need to stop at 100y, that's fine. Build the feel for sustained swimming.\n40min easy run @ Z2.", "weekNote": "All Z2, try to establish routine as this is the schedule going forward", "wkHrs": ""}, {"checked": true, "date": "Thu Apr 2, 2026", "day": "Thu", "wk": "Wk 2", "phase": "P1 · Foundation", "type": "Bike+Str", "detail": "Easy ride 50min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: squats, Romanian deadlifts, Bulgarian split squats, single-leg press, walking lunges, hip thrust, calf raises, Copenhagen plank. Moderate weight — don't trash legs before tomorrow's session.", "weekNote": "All Z2, try to establish routine as this is the schedule going forward", "wkHrs": ""}, {"checked": true, "date": "Fri Apr 3, 2026", "day": "Fri", "wk": "Wk 2", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 875y — 3x25y Warmup drills 8×100y with 25sec rest. Solidify 100y repeats. Focus on breathing every 2 strokes consistently.\n25min easy run @ Z2.", "weekNote": "All Z2, try to establish routine as this is the schedule going forward", "wkHrs": ""}, {"checked": true, "date": "Sat Apr 4, 2026", "day": "Sat", "wk": "Wk 2", "phase": "P1 · Foundation", "type": "Run+Str", "detail": "Long run 1hr @ Z2 — conversational pace the entire time.", "weekNote": "All Z2, try to establish routine as this is the schedule going forward", "wkHrs": ""}, {"checked": true, "date": "Sun Apr 5, 2026", "day": "Sun", "wk": "Wk 2", "phase": "P1 · Foundation", "type": "Long Ride", "detail": "Long ride 2hr @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "All Z2, try to establish routine as this is the schedule going forward", "wkHrs": ""}, {"checked": true, "date": "Mon Apr 6, 2026", "day": "Mon", "wk": "Wk 3", "phase": "P1 · Foundation", "type": "Swim+Str", "detail": "DRILL SWIM 1100y — WU 250y easy. 10×50y catch-up drill 20sec rest (both hands touch before next stroke). 4×50y fingertip drag 20sec rest. CD 100y. Focus: high elbow recovery — drag your fingertips along the surface.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RECOVERY WEEK — Volume down ~25%. No quality work. Sleep extra.", "wkHrs": "6.7h"}, {"checked": false, "date": "Tue Apr 7, 2026", "day": "Tue", "wk": "Wk 3", "phase": "P1 · Foundation", "type": "Swim+Bike", "detail": "Short swim 750y — 6×125y with 25sec rest. First 125y repeats — find a sustainable rhythm.\nEasy ride 55min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Volume down ~25%. No quality work. Sleep extra.", "wkHrs": ""}, {"checked": false, "date": "Wed Apr 8, 2026", "day": "Wed", "wk": "Wk 3", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1300y — attempt 225y continuous, rest 90sec, repeat ×3, then 6×100y with 22sec rest. First 225y attempt — if you hit it, great. If you stop at 175y, rest and finish. No pressure.\n40min easy run @ Z2.", "weekNote": "RECOVERY WEEK — Volume down ~25%. No quality work. Sleep extra.", "wkHrs": ""}, {"checked": false, "date": "Thu Apr 9, 2026", "day": "Thu", "wk": "Wk 3", "phase": "P1 · Foundation", "type": "Bike+Str", "detail": "Easy ride 40min @ Z2. Smooth cadence 85–90rpm. Very easy — recovery week.\nStrength 45min LOWER BODY: squats, Romanian deadlifts, Bulgarian split squats, single-leg press, walking lunges, hip thrust, calf raises, Copenhagen plank. Moderate weight — don't trash legs before tomorrow's session.", "weekNote": "RECOVERY WEEK — Volume down ~25%. No quality work. Sleep extra.", "wkHrs": ""}, {"checked": false, "date": "Fri Apr 10, 2026", "day": "Fri", "wk": "Wk 3", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 975y — Warmup - 75m 9×100y with 22sec rest. Third swim of week 3. Start to feel the rhythm of four swims per week.\n25min easy run @ Z2.", "weekNote": "RECOVERY WEEK — Volume down ~25%. No quality work. Sleep extra.", "wkHrs": ""}, {"checked": false, "date": "Sat Apr 11, 2026", "day": "Sat", "wk": "Wk 3", "phase": "P1 · Foundation", "type": "Run", "detail": "Long run 40min @ Z1-2 — easy and relaxed.", "weekNote": "RECOVERY WEEK — Volume down ~25%. No quality work. Sleep extra.", "wkHrs": ""}, {"checked": false, "date": "Sun Apr 12, 2026", "day": "Sun", "wk": "Wk 3", "phase": "P1 · Foundation", "type": "Long Ride", "detail": "Long ride 90min @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Volume down ~25%. No quality work. Sleep extra.", "wkHrs": ""}, {"checked": false, "date": "Mon Apr 13, 2026", "day": "Mon", "wk": "Wk 4", "phase": "P1 · Foundation", "type": "Swim+Str", "detail": "DRILL SWIM 1100y — WU 200y easy. 6×75y = 25y single-arm L / 25y single-arm R / 25y full free. 25sec rest. 200y pull buoy smooth. CD 100y. Focus: feel each arm pulling independently — notice which side feels weaker.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "All Z2. First 2.5hr ride Saturday. Bring 2 bottles + 2 gels.", "wkHrs": "9.5h"}, {"checked": false, "date": "Tue Apr 14, 2026", "day": "Tue", "wk": "Wk 4", "phase": "P1 · Foundation", "type": "Swim+Bike", "detail": "Easy swim 450y — 9×50y with 30sec rest. Recovery week — relaxed and smooth. Technique only.\nEasy ride 80min @ Z2. Smooth cadence 85–90rpm. Include 2×10min @ Z3 if legs feel good.", "weekNote": "All Z2. First 2.5hr ride Saturday. Bring 2 bottles + 2 gels.", "wkHrs": ""}, {"checked": false, "date": "Wed Apr 15, 2026", "day": "Wed", "wk": "Wk 4", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1300y — 4×325y with 45sec rest. Build comfort at 325y.\nEasy run 40min @ Z2 — conversational pace.", "weekNote": "All Z2. First 2.5hr ride Saturday. Bring 2 bottles + 2 gels.", "wkHrs": ""}, {"checked": false, "date": "Thu Apr 16, 2026", "day": "Thu", "wk": "Wk 4", "phase": "P1 · Foundation", "type": "Bike+Str", "detail": "Easy ride 55min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: squats, Romanian deadlifts, Bulgarian split squats, single-leg press, walking lunges, hip thrust, calf raises, Copenhagen plank. Moderate weight — don't trash legs before tomorrow's session.", "weekNote": "All Z2. First 2.5hr ride Saturday. Bring 2 bottles + 2 gels.", "wkHrs": ""}, {"checked": false, "date": "Fri Apr 17, 2026", "day": "Fri", "wk": "Wk 4", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 975y — 3×325y with 50sec rest. Medium day — controlled effort.\nEasy run 25min @ Z1 — conversational pace. Short recovery run. In and out.", "weekNote": "All Z2. First 2.5hr ride Saturday. Bring 2 bottles + 2 gels.", "wkHrs": ""}, {"checked": false, "date": "Sat Apr 18, 2026", "day": "Sat", "wk": "Wk 4", "phase": "P1 · Foundation", "type": "Run", "detail": "Long run 1hr 10min @ Z2 — conversational pace the entire time.", "weekNote": "All Z2. First 2.5hr ride Saturday. Bring 2 bottles + 2 gels.", "wkHrs": ""}, {"checked": false, "date": "Sun Apr 19, 2026", "day": "Sun", "wk": "Wk 4", "phase": "P1 · Foundation", "type": "Long Ride", "detail": "Long ride 2hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "All Z2. First 2.5hr ride Saturday. Bring 2 bottles + 2 gels.", "wkHrs": ""}, {"checked": false, "date": "Mon Apr 20, 2026", "day": "Mon", "wk": "Wk 5", "phase": "P1 · Foundation", "type": "Swim+Str", "detail": "DRILL SWIM 1200y — WU 250y easy. 8×75y = 25y 6-kick drill (kick on side, 6 kicks, stroke) / 25y catch-up / 25y full free. 25sec rest. 200y pull buoy. CD 150y. Focus: hip rotation drives the stroke — let your hips lead.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "All Z2. First 3-hour ride Sunday. Three 1hr mental blocks.", "wkHrs": "10.8h"}, {"checked": false, "date": "Tue Apr 21, 2026", "day": "Tue", "wk": "Wk 5", "phase": "P1 · Foundation", "type": "Swim+Bike", "detail": "Short swim 750y — 15×55y with 18sec rest. Side kick drill every 4th rep. Stay relaxed.\nEasy ride 90min @ Z2. Smooth cadence 85–90rpm. Include 2×10min @ Z3 if legs feel good.", "weekNote": "All Z2. First 3-hour ride Sunday. Three 1hr mental blocks.", "wkHrs": ""}, {"checked": false, "date": "Wed Apr 22, 2026", "day": "Wed", "wk": "Wk 5", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1525y — 7×225y with 28sec rest or 2×650y with 90sec rest.\nEasy run 45min @ Z2 — conversational pace.", "weekNote": "All Z2. First 3-hour ride Sunday. Three 1hr mental blocks.", "wkHrs": ""}, {"checked": false, "date": "Thu Apr 23, 2026", "day": "Thu", "wk": "Wk 5", "phase": "P1 · Foundation", "type": "Bike+Str", "detail": "Easy ride 60min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: squats, Romanian deadlifts, Bulgarian split squats, single-leg press, walking lunges, hip thrust, calf raises, Copenhagen plank. Moderate weight — don't trash legs before tomorrow's session.", "weekNote": "All Z2. First 3-hour ride Sunday. Three 1hr mental blocks.", "wkHrs": ""}, {"checked": false, "date": "Fri Apr 24, 2026", "day": "Fri", "wk": "Wk 5", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1100y — 5×225y with 30sec rest. Even splits, technique focus.\nEasy run 30min @ Z1 — conversational pace.", "weekNote": "All Z2. First 3-hour ride Sunday. Three 1hr mental blocks.", "wkHrs": ""}, {"checked": false, "date": "Sat Apr 25, 2026", "day": "Sat", "wk": "Wk 5", "phase": "P1 · Foundation", "type": "Run", "detail": "Long run 1hr 20min @ Z2 — conversational pace the entire time.", "weekNote": "All Z2. First 3-hour ride Sunday. Three 1hr mental blocks.", "wkHrs": ""}, {"checked": false, "date": "Sun Apr 26, 2026", "day": "Sun", "wk": "Wk 5", "phase": "P1 · Foundation", "type": "Long Ride", "detail": "Long ride 3hr @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "All Z2. First 3-hour ride Sunday. Three 1hr mental blocks.", "wkHrs": ""}, {"checked": false, "date": "Mon Apr 27, 2026", "day": "Mon", "wk": "Wk 6", "phase": "P1 · Foundation", "type": "Swim+Str", "detail": "DRILL SWIM 975y — WU 200y easy. 6×75y easy drill rotation (your choice of drill per rep) 30sec rest. 150y easy free. CD 100y. Recovery day — no effort. Just feel good in the water.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RECOVERY WEEK — Easy all week. Arrive at Phase 1 peak fresh.", "wkHrs": "8.0h"}, {"checked": false, "date": "Tue Apr 28, 2026", "day": "Tue", "wk": "Wk 6", "phase": "P1 · Foundation", "type": "Swim+Bike", "detail": "Short swim 800y — 8×110y with 22sec rest. Even splits — don't start too hard on rep 1.\nEasy ride 65min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Easy all week. Arrive at Phase 1 peak fresh.", "wkHrs": ""}, {"checked": false, "date": "Wed Apr 29, 2026", "day": "Wed", "wk": "Wk 6", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1200y — 5×225y with 35sec rest + 1×100y cool-down. Easy — recovery week, no effort.\nEasy run 30min @ Z2 — conversational pace. Comfortable and controlled. No watch pressure.", "weekNote": "RECOVERY WEEK — Easy all week. Arrive at Phase 1 peak fresh.", "wkHrs": ""}, {"checked": false, "date": "Thu Apr 30, 2026", "day": "Thu", "wk": "Wk 6", "phase": "P1 · Foundation", "type": "Bike+Str", "detail": "Easy ride 45min @ Z2. Smooth cadence 85–90rpm. Very easy — recovery week.\nStrength 45min LOWER BODY: squats, Romanian deadlifts, Bulgarian split squats, single-leg press, walking lunges, hip thrust, calf raises, Copenhagen plank. Moderate weight — don't trash legs before tomorrow's session.", "weekNote": "RECOVERY WEEK — Easy all week. Arrive at Phase 1 peak fresh.", "wkHrs": ""}, {"checked": false, "date": "Fri May 1, 2026", "day": "Fri", "wk": "Wk 6", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 875y — 4×225y with 45sec rest. Third swim of the week — keep it aerobic. Easy — recovery week.\nEasy run 20min @ Z1 — conversational pace. Short recovery run. In and out.", "weekNote": "RECOVERY WEEK — Easy all week. Arrive at Phase 1 peak fresh.", "wkHrs": ""}, {"checked": false, "date": "Sat May 2, 2026", "day": "Sat", "wk": "Wk 6", "phase": "P1 · Foundation", "type": "Run", "detail": "Long run 55min @ Z1-2 — easy and relaxed.", "weekNote": "RECOVERY WEEK — Easy all week. Arrive at Phase 1 peak fresh.", "wkHrs": ""}, {"checked": false, "date": "Sun May 3, 2026", "day": "Sun", "wk": "Wk 6", "phase": "P1 · Foundation", "type": "Long Ride", "detail": "Long ride 2hr @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Easy all week. Arrive at Phase 1 peak fresh.", "wkHrs": ""}, {"checked": false, "date": "Mon May 4, 2026", "day": "Mon", "wk": "Wk 7", "phase": "P1 · Foundation", "type": "Swim+Str", "detail": "DRILL SWIM 1300y — WU 300y easy. 6×100y: 25y catch-up / 25y fingertip drag / 25y fist drill / 25y full free. 25sec rest. CD 100y. Focus: connect each drill to full freestyle — the fist drill builds catch pressure.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "All Z2. Long run hits 90min Saturday for first time — big milestone.", "wkHrs": "12.0h"}, {"checked": false, "date": "Tue May 5, 2026", "day": "Tue", "wk": "Wk 7", "phase": "P1 · Foundation", "type": "Swim+Bike", "detail": "Short swim 900y — 9×110y with 20sec rest. Hold form on last 3 reps as fatigue builds.\nEasy ride 100min @ Z2. Smooth cadence 85–90rpm. Include 2×10min @ Z3 if legs feel good.", "weekNote": "All Z2. Long run hits 90min Saturday for first time — big milestone.", "wkHrs": ""}, {"checked": false, "date": "Wed May 6, 2026", "day": "Wed", "wk": "Wk 7", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1750y — 8×225y with 22sec rest. Hold form through the back half.\nEasy run 50min @ Z2 — conversational pace.", "weekNote": "All Z2. Long run hits 90min Saturday for first time — big milestone.", "wkHrs": ""}, {"checked": false, "date": "Thu May 7, 2026", "day": "Thu", "wk": "Wk 7", "phase": "P1 · Foundation", "type": "Bike+Str", "detail": "Easy ride 65min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: squats, Romanian deadlifts, Bulgarian split squats, single-leg press, walking lunges, hip thrust, calf raises, Copenhagen plank. Moderate weight — don't trash legs before tomorrow's session.", "weekNote": "All Z2. Long run hits 90min Saturday for first time — big milestone.", "wkHrs": ""}, {"checked": false, "date": "Fri May 8, 2026", "day": "Fri", "wk": "Wk 7", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1200y — 11×100y with 18sec rest. Short rest = race-like. Hold form.\nEasy run 35min @ Z1 — conversational pace.", "weekNote": "All Z2. Long run hits 90min Saturday for first time — big milestone.", "wkHrs": ""}, {"checked": false, "date": "Sat May 9, 2026", "day": "Sat", "wk": "Wk 7", "phase": "P1 · Foundation", "type": "Long Run", "detail": "Long run 1hr 30min @ Z2 — conversational pace the entire time. Settle into a rhythm early — the back 30min will test your mental endurance.", "weekNote": "All Z2. Long run hits 90min Saturday for first time — big milestone.", "wkHrs": ""}, {"checked": false, "date": "Sun May 10, 2026", "day": "Sun", "wk": "Wk 7", "phase": "P1 · Foundation", "type": "Long Ride", "detail": "Long ride 3hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "All Z2. Long run hits 90min Saturday for first time — big milestone.", "wkHrs": ""}, {"checked": false, "date": "Mon May 11, 2026", "day": "Mon", "wk": "Wk 8", "phase": "P1 · Foundation", "type": "Swim+Str", "detail": "DRILL SWIM 1425y — WU 300y easy. 5×100y: 25y single-arm L / 25y single-arm R / 25y catch-up / 25y full free. 25sec rest. 3×75y pull buoy 20sec rest. CD 150y. Focus: long smooth strokes — count strokes per length and try to reduce by 1.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "All Z2. 4-hour long ride Sunday. Eat every 30min — nutrition is a skill.", "wkHrs": "13.1h"}, {"checked": false, "date": "Tue May 12, 2026", "day": "Tue", "wk": "Wk 8", "phase": "P1 · Foundation", "type": "Swim+Bike", "detail": "Easy swim 550y — 5×110y with 35sec rest. Recovery week — easy effort, technique focus.\nEasy ride 110min @ Z2. Smooth cadence 85–90rpm. Include 2×10min @ Z3 if legs feel good.", "weekNote": "All Z2. 4-hour long ride Sunday. Eat every 30min — nutrition is a skill.", "wkHrs": ""}, {"checked": false, "date": "Wed May 13, 2026", "day": "Wed", "wk": "Wk 8", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1975y — 6×325y with 28sec rest. 325y reps getting comfortable now.\nEasy run 55min @ Z2 — conversational pace.", "weekNote": "All Z2. 4-hour long ride Sunday. Eat every 30min — nutrition is a skill.", "wkHrs": ""}, {"checked": false, "date": "Thu May 14, 2026", "day": "Thu", "wk": "Wk 8", "phase": "P1 · Foundation", "type": "Bike+Str", "detail": "Easy ride 70min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: squats, Romanian deadlifts, Bulgarian split squats, single-leg press, walking lunges, hip thrust, calf raises, Copenhagen plank. Moderate weight — don't trash legs before tomorrow's session.", "weekNote": "All Z2. 4-hour long ride Sunday. Eat every 30min — nutrition is a skill.", "wkHrs": ""}, {"checked": false, "date": "Fri May 15, 2026", "day": "Fri", "wk": "Wk 8", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1300y — 6×225y with 25sec rest. Medium day — quality over hustle.\nEasy run 35min @ Z1 — conversational pace.", "weekNote": "All Z2. 4-hour long ride Sunday. Eat every 30min — nutrition is a skill.", "wkHrs": ""}, {"checked": false, "date": "Sat May 16, 2026", "day": "Sat", "wk": "Wk 8", "phase": "P1 · Foundation", "type": "Long Run", "detail": "Long run 1hr 40min @ Z2 — conversational pace the entire time. Settle into a rhythm early — the back 30min will test your mental endurance.", "weekNote": "All Z2. 4-hour long ride Sunday. Eat every 30min — nutrition is a skill.", "wkHrs": ""}, {"checked": false, "date": "Sun May 17, 2026", "day": "Sun", "wk": "Wk 8", "phase": "P1 · Foundation", "type": "Long Ride", "detail": "Long ride 4hr @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "All Z2. 4-hour long ride Sunday. Eat every 30min — nutrition is a skill.", "wkHrs": ""}, {"checked": false, "date": "Mon May 18, 2026", "day": "Mon", "wk": "Wk 9", "phase": "P1 · Foundation", "type": "Swim+Str", "detail": "DRILL SWIM 1100y — WU 200y easy. 8×50y: odds = fist drill, evens = full free 25sec rest. 200y easy free. CD 100y. Recovery week — easy. The fist drill teaches your forearm to catch water when you open your hand.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RECOVERY WEEK — End of Phase 1. Foundation built. Arrive at Phase 2 hungry.", "wkHrs": "9.3h"}, {"checked": false, "date": "Tue May 19, 2026", "day": "Tue", "wk": "Wk 9", "phase": "P1 · Foundation", "type": "Swim+Bike", "detail": "Easy swim 650y — 6×110y with 30sec rest. End of Phase 1 recovery — smooth and relaxed.\nEasy ride 75min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — End of Phase 1. Foundation built. Arrive at Phase 2 hungry.", "wkHrs": ""}, {"checked": false, "date": "Wed May 20, 2026", "day": "Wed", "wk": "Wk 9", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 1525y — 7×225y with 28sec rest or 2×650y with 90sec rest. Easy — recovery week, no effort.\nEasy run 35min @ Z2 — conversational pace. Comfortable and controlled. No watch pressure.", "weekNote": "RECOVERY WEEK — End of Phase 1. Foundation built. Arrive at Phase 2 hungry.", "wkHrs": ""}, {"checked": false, "date": "Thu May 21, 2026", "day": "Thu", "wk": "Wk 9", "phase": "P1 · Foundation", "type": "Bike+Str", "detail": "Easy ride 50min @ Z2. Smooth cadence 85–90rpm. Very easy — recovery week.\nStrength 45min LOWER BODY: squats, Romanian deadlifts, Bulgarian split squats, single-leg press, walking lunges, hip thrust, calf raises, Copenhagen plank. Moderate weight — don't trash legs before tomorrow's session.", "weekNote": "RECOVERY WEEK — End of Phase 1. Foundation built. Arrive at Phase 2 hungry.", "wkHrs": ""}, {"checked": false, "date": "Fri May 22, 2026", "day": "Fri", "wk": "Wk 9", "phase": "P1 · Foundation", "type": "Swim+Run", "detail": "SWIM 975y — 3×325y with 50sec rest. Medium day — controlled effort. Easy — recovery week.\nEasy run 25min @ Z1 — conversational pace. Short recovery run. In and out.", "weekNote": "RECOVERY WEEK — End of Phase 1. Foundation built. Arrive at Phase 2 hungry.", "wkHrs": ""}, {"checked": false, "date": "Sat May 23, 2026", "day": "Sat", "wk": "Wk 9", "phase": "P1 · Foundation", "type": "Run", "detail": "Long run 1hr 10min @ Z1-2 — easy and relaxed.", "weekNote": "RECOVERY WEEK — End of Phase 1. Foundation built. Arrive at Phase 2 hungry.", "wkHrs": ""}, {"checked": false, "date": "Sun May 24, 2026", "day": "Sun", "wk": "Wk 9", "phase": "P1 · Foundation", "type": "Long Ride", "detail": "Long ride 2hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — End of Phase 1. Foundation built. Arrive at Phase 2 hungry.", "wkHrs": ""}, {"checked": false, "date": "Mon May 25, 2026", "day": "Mon", "wk": "Wk 10", "phase": "P2 · Build 1", "type": "Swim+Str", "detail": "DRILL SWIM 1525y — WU 300y easy. 6×100y: 25y scull (hands in front, small figure-8 sculling) / 25y catch-up / 25y single-arm / 25y full free. 20sec rest. 4×75y pull buoy 15sec rest. CD 125y. Focus: feel the pressure on your palm through the catch phase.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "FIRST TEMPO RUN Wednesday + first brick Sunday. Phase 2 quality work begins.", "wkHrs": "14.5h"}, {"checked": false, "date": "Tue May 26, 2026", "day": "Tue", "wk": "Wk 10", "phase": "P2 · Build 1", "type": "Swim+Bike", "detail": "Short swim 1000y — 10×110y with 18sec rest. First Phase 2 Tuesday swim — hold even pace.\nEasy ride 120min @ Z2. Smooth cadence 85–90rpm. Include 2×10min @ Z3 if legs feel good.", "weekNote": "FIRST TEMPO RUN Wednesday + first brick Sunday. Phase 2 quality work begins.", "wkHrs": ""}, {"checked": false, "date": "Wed May 27, 2026", "day": "Wed", "wk": "Wk 10", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 2175y — 1×1100y continuous, rest 2min, 2×550y with 45sec rest. Go for the 1100y straight.\nTempo run 50min total: 10min easy warm-up → 30min @ Z3-4 (comfortably hard, 3–4 words max) → 10min easy cool-down.", "weekNote": "FIRST TEMPO RUN Wednesday + first brick Sunday. Phase 2 quality work begins.", "wkHrs": ""}, {"checked": false, "date": "Thu May 28, 2026", "day": "Thu", "wk": "Wk 10", "phase": "P2 · Build 1", "type": "Bike+Str", "detail": "Easy ride 75min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "FIRST TEMPO RUN Wednesday + first brick Sunday. Phase 2 quality work begins.", "wkHrs": ""}, {"checked": false, "date": "Fri May 29, 2026", "day": "Fri", "wk": "Wk 10", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1425y — 5×275y with 30sec rest + 3×100y cool-down.\nEasy run 35min @ Z1 — conversational pace.", "weekNote": "FIRST TEMPO RUN Wednesday + first brick Sunday. Phase 2 quality work begins.", "wkHrs": ""}, {"checked": false, "date": "Sat May 30, 2026", "day": "Sat", "wk": "Wk 10", "phase": "P2 · Build 1", "type": "Long Run", "detail": "Long run 1hr 50min @ Z2 — conversational pace the entire time. Settle into a rhythm early — the back 30min will test your mental endurance.", "weekNote": "FIRST TEMPO RUN Wednesday + first brick Sunday. Phase 2 quality work begins.", "wkHrs": ""}, {"checked": false, "date": "Sun May 31, 2026", "day": "Sun", "wk": "Wk 10", "phase": "P2 · Build 1", "type": "Brick", "detail": "Long ride 4hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm.\n→ BRICK: immediately after — 20min easy run off the bike — practice your nutrition and T2. Run at easy Z2 to practice nutrition. Don't stop between bike and run.", "weekNote": "FIRST TEMPO RUN Wednesday + first brick Sunday. Phase 2 quality work begins.", "wkHrs": ""}, {"checked": false, "date": "Mon Jun 1, 2026", "day": "Mon", "wk": "Wk 11", "phase": "P2 · Build 1", "type": "Swim+Str", "detail": "DRILL SWIM 1650y — WU 350y easy. 5×150y: 50y drill rotation (scull / catch-up / fingertip drag) + 100y steady free. 25sec rest. 3×50y fist drill 20sec rest. CD 150y. Focus: consistent stroke rate under mild fatigue — don't rush the recovery.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "Tempo run growing. 5hr long ride Sunday. You're building real triathlon fitness.", "wkHrs": "15.4h"}, {"checked": false, "date": "Tue Jun 2, 2026", "day": "Tue", "wk": "Wk 11", "phase": "P2 · Build 1", "type": "Swim+Bike", "detail": "Short swim 1100y — 5×220y with 30sec rest. Longer reps — find your race rhythm.\nEasy ride 130min @ Z2. Smooth cadence 85–90rpm. Include 2×10min @ Z3 if legs feel good.", "weekNote": "Tempo run growing. 5hr long ride Sunday. You're building real triathlon fitness.", "wkHrs": ""}, {"checked": false, "date": "Wed Jun 3, 2026", "day": "Wed", "wk": "Wk 11", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 2400y — 11×225y with 18sec rest. High volume — even pace all the way.\nTempo run 55min total: 10min easy warm-up → 35min @ Z3-4 (comfortably hard, 3–4 words max) → 10min easy cool-down.", "weekNote": "Tempo run growing. 5hr long ride Sunday. You're building real triathlon fitness.", "wkHrs": ""}, {"checked": false, "date": "Thu Jun 4, 2026", "day": "Thu", "wk": "Wk 11", "phase": "P2 · Build 1", "type": "Bike+Str", "detail": "Easy ride 80min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "Tempo run growing. 5hr long ride Sunday. You're building real triathlon fitness.", "wkHrs": ""}, {"checked": false, "date": "Fri Jun 5, 2026", "day": "Fri", "wk": "Wk 11", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1525y — 7×225y with 22sec rest. Steady race-pace effort.\nEasy run 40min @ Z1 — conversational pace.", "weekNote": "Tempo run growing. 5hr long ride Sunday. You're building real triathlon fitness.", "wkHrs": ""}, {"checked": false, "date": "Sat Jun 6, 2026", "day": "Sat", "wk": "Wk 11", "phase": "P2 · Build 1", "type": "Long Run", "detail": "Long run 2hr @ Z2 — conversational pace the entire time. Break it into 4 blocks of 30min mentally.", "weekNote": "Tempo run growing. 5hr long ride Sunday. You're building real triathlon fitness.", "wkHrs": ""}, {"checked": false, "date": "Sun Jun 7, 2026", "day": "Sun", "wk": "Wk 11", "phase": "P2 · Build 1", "type": "Long Ride", "detail": "Long ride 5hr @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "Tempo run growing. 5hr long ride Sunday. You're building real triathlon fitness.", "wkHrs": ""}, {"checked": false, "date": "Mon Jun 8, 2026", "day": "Mon", "wk": "Wk 12", "phase": "P2 · Build 1", "type": "Swim+Str", "detail": "DRILL SWIM 1300y — WU 250y easy. 8×75y: 25y side-kick drill / 25y catch-up / 25y full free. 25sec rest. CD 100y. Recovery week — easy. Side kick teaches rotation from the hips, not the shoulders.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RECOVERY WEEK — Drop intensity and volume. Sleep and eat well.", "wkHrs": "11.3h"}, {"checked": false, "date": "Tue Jun 9, 2026", "day": "Tue", "wk": "Wk 12", "phase": "P2 · Build 1", "type": "Swim+Bike", "detail": "Easy swim 750y — 5×150y with 40sec rest. Recovery week — no effort.\nEasy ride 90min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Drop intensity and volume. Sleep and eat well.", "wkHrs": ""}, {"checked": false, "date": "Wed Jun 10, 2026", "day": "Wed", "wk": "Wk 12", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1750y — 8×225y with 22sec rest. Hold form through the back half. Easy — recovery week, no effort.\nEasy run 40min @ Z2 — conversational pace. Comfortable and controlled. No watch pressure.", "weekNote": "RECOVERY WEEK — Drop intensity and volume. Sleep and eat well.", "wkHrs": ""}, {"checked": false, "date": "Thu Jun 11, 2026", "day": "Thu", "wk": "Wk 12", "phase": "P2 · Build 1", "type": "Bike+Str", "detail": "Easy ride 60min @ Z2. Smooth cadence 85–90rpm. Very easy — recovery week.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "RECOVERY WEEK — Drop intensity and volume. Sleep and eat well.", "wkHrs": ""}, {"checked": false, "date": "Fri Jun 12, 2026", "day": "Fri", "wk": "Wk 12", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1200y — 11×100y with 18sec rest. Short rest = race-like. Hold form. Easy — recovery week.\nEasy run 25min @ Z1 — conversational pace. Short recovery run. In and out.", "weekNote": "RECOVERY WEEK — Drop intensity and volume. Sleep and eat well.", "wkHrs": ""}, {"checked": false, "date": "Sat Jun 13, 2026", "day": "Sat", "wk": "Wk 12", "phase": "P2 · Build 1", "type": "Run", "detail": "Long run 1hr 25min @ Z1-2 — easy and relaxed.", "weekNote": "RECOVERY WEEK — Drop intensity and volume. Sleep and eat well.", "wkHrs": ""}, {"checked": false, "date": "Sun Jun 14, 2026", "day": "Sun", "wk": "Wk 12", "phase": "P2 · Build 1", "type": "Long Ride", "detail": "Long ride 3hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Drop intensity and volume. Sleep and eat well.", "wkHrs": ""}, {"checked": false, "date": "Mon Jun 15, 2026", "day": "Mon", "wk": "Wk 13", "phase": "P2 · Build 1", "type": "Swim+Str", "detail": "DRILL SWIM 1750y — WU 350y easy. 6×150y: 25y scull / 25y catch-up / 25y single-arm L / 25y single-arm R / 50y full free. 25sec rest. 4×50y counting strokes per length 20sec rest. CD 100y. Focus: apply each drill feeling directly into full freestyle.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "Tempo pushing 65min Wednesday. 5.5hr long ride. Phoenix heat — early morning only.", "wkHrs": "16.6h"}, {"checked": false, "date": "Tue Jun 16, 2026", "day": "Tue", "wk": "Wk 13", "phase": "P2 · Build 1", "type": "Swim+Bike", "detail": "Short swim 1200y — 6×220y with 25sec rest. Negative split each rep — 2nd half slightly faster.\nEasy ride 140min @ Z2. Smooth cadence 85–90rpm. Include 2×10min @ Z3 if legs feel good.", "weekNote": "Tempo pushing 65min Wednesday. 5.5hr long ride. Phoenix heat — early morning only.", "wkHrs": ""}, {"checked": false, "date": "Wed Jun 17, 2026", "day": "Wed", "wk": "Wk 13", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 2625y — 6×425y with 32sec rest. 425y race-length repeats.\nTempo run 65min total: 10min easy warm-up → 45min @ Z3-4 (comfortably hard, 3–4 words max) → 10min easy cool-down.", "weekNote": "Tempo pushing 65min Wednesday. 5.5hr long ride. Phoenix heat — early morning only.", "wkHrs": ""}, {"checked": false, "date": "Thu Jun 18, 2026", "day": "Thu", "wk": "Wk 13", "phase": "P2 · Build 1", "type": "Bike+Str", "detail": "Easy ride 85min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "Tempo pushing 65min Wednesday. 5.5hr long ride. Phoenix heat — early morning only.", "wkHrs": ""}, {"checked": false, "date": "Fri Jun 19, 2026", "day": "Fri", "wk": "Wk 13", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1650y — 5×325y with 28sec rest. Building medium-day endurance.\nEasy run 40min @ Z1 — conversational pace.", "weekNote": "Tempo pushing 65min Wednesday. 5.5hr long ride. Phoenix heat — early morning only.", "wkHrs": ""}, {"checked": false, "date": "Sat Jun 20, 2026", "day": "Sat", "wk": "Wk 13", "phase": "P2 · Build 1", "type": "Long Run", "detail": "Long run 2hr 15min @ Z2 — conversational pace the entire time. Break it into 4 blocks of 30min mentally.", "weekNote": "Tempo pushing 65min Wednesday. 5.5hr long ride. Phoenix heat — early morning only.", "wkHrs": ""}, {"checked": false, "date": "Sun Jun 21, 2026", "day": "Sun", "wk": "Wk 13", "phase": "P2 · Build 1", "type": "Long Ride", "detail": "Long ride 5hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "Tempo pushing 65min Wednesday. 5.5hr long ride. Phoenix heat — early morning only.", "wkHrs": ""}, {"checked": false, "date": "Mon Jun 22, 2026", "day": "Mon", "wk": "Wk 14", "phase": "P2 · Build 1", "type": "Swim+Str", "detail": "DRILL SWIM 1850y — WU 400y easy. 5×200y: 50y drill mix (your choice) + 150y controlled free counting strokes. 30sec rest. 4×50y at stroke-count focus 20sec rest. CD 50y. Focus: fewer strokes per length = better technique. What's your number today?\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "FIRST Z5 INTERVALS Friday. Brick Sunday to dial nutrition. Big week.", "wkHrs": "18.1h"}, {"checked": false, "date": "Tue Jun 23, 2026", "day": "Tue", "wk": "Wk 14", "phase": "P2 · Build 1", "type": "Swim+Bike", "detail": "Short swim 1300y — 13×110y with 18sec rest. High rep, short rest — race-like rhythm.\nEasy ride 150min @ Z2. Smooth cadence 85–90rpm. Include 2×10min @ Z3 if legs feel good.", "weekNote": "FIRST Z5 INTERVALS Friday. Brick Sunday to dial nutrition. Big week.", "wkHrs": ""}, {"checked": false, "date": "Wed Jun 24, 2026", "day": "Wed", "wk": "Wk 14", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 2850y — 1×1650y continuous, rest 2min, 5×250y with 25sec rest. Push the 1650y.\nTempo run 65min total: 10min easy warm-up → 45min @ Z3-4 (comfortably hard, 3–4 words max) → 10min easy cool-down.", "weekNote": "FIRST Z5 INTERVALS Friday. Brick Sunday to dial nutrition. Big week.", "wkHrs": ""}, {"checked": false, "date": "Thu Jun 25, 2026", "day": "Thu", "wk": "Wk 14", "phase": "P2 · Build 1", "type": "Bike+Str", "detail": "Easy ride 90min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "FIRST Z5 INTERVALS Friday. Brick Sunday to dial nutrition. Big week.", "wkHrs": ""}, {"checked": false, "date": "Fri Jun 26, 2026", "day": "Fri", "wk": "Wk 14", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1750y — 4×425y with 35sec rest. 425y reps becoming routine.\nINTERVALS 50min total: 10min warm-up → 5×(3min @ Z5 very hard / 3min easy jog) → 10min cool-down. Z5 = can barely say your name. Controlled, not panicked.", "weekNote": "FIRST Z5 INTERVALS Friday. Brick Sunday to dial nutrition. Big week.", "wkHrs": ""}, {"checked": false, "date": "Sat Jun 27, 2026", "day": "Sat", "wk": "Wk 14", "phase": "P2 · Build 1", "type": "Long Run", "detail": "Long run 2hr 30min @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "FIRST Z5 INTERVALS Friday. Brick Sunday to dial nutrition. Big week.", "wkHrs": ""}, {"checked": false, "date": "Sun Jun 28, 2026", "day": "Sun", "wk": "Wk 14", "phase": "P2 · Build 1", "type": "Brick", "detail": "Long ride 6hr @ Z2. Eat every 30min. Cadence 85–90rpm. Think in 2hr mental blocks.\n→ BRICK: immediately after — 20min easy run off the bike — practice your nutrition and T2. Run at easy Z2 to practice nutrition. Don't stop between bike and run.", "weekNote": "FIRST Z5 INTERVALS Friday. Brick Sunday to dial nutrition. Big week.", "wkHrs": ""}, {"checked": false, "date": "Mon Jun 29, 2026", "day": "Mon", "wk": "Wk 15", "phase": "P2 · Build 1", "type": "Swim+Str", "detail": "DRILL SWIM 1425y — WU 300y easy. 6×100y: 25y drill of choice / 75y easy free. 25sec rest. CD 225y. Recovery week — just feel the water. No effort, all feel.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RECOVERY WEEK — Let Phase 2 quality work consolidate. Phase 3 is big.", "wkHrs": "12.6h"}, {"checked": false, "date": "Tue Jun 30, 2026", "day": "Tue", "wk": "Wk 15", "phase": "P2 · Build 1", "type": "Swim+Bike", "detail": "Easy swim 900y — 9×110y with 30sec rest. Recovery week — smooth only.\nEasy ride 100min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Let Phase 2 quality work consolidate. Phase 3 is big.", "wkHrs": ""}, {"checked": false, "date": "Wed Jul 1, 2026", "day": "Wed", "wk": "Wk 15", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 2075y — 1×1100y continuous, rest 2min, 2×550y with 45sec rest. Go for the 1100y straight. Easy — recovery week, no effort.\nEasy run 45min @ Z2 — conversational pace. Comfortable and controlled. No watch pressure.", "weekNote": "RECOVERY WEEK — Let Phase 2 quality work consolidate. Phase 3 is big.", "wkHrs": ""}, {"checked": false, "date": "Thu Jul 2, 2026", "day": "Thu", "wk": "Wk 15", "phase": "P2 · Build 1", "type": "Bike+Str", "detail": "Easy ride 65min @ Z2. Smooth cadence 85–90rpm. Very easy — recovery week.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "RECOVERY WEEK — Let Phase 2 quality work consolidate. Phase 3 is big.", "wkHrs": ""}, {"checked": false, "date": "Fri Jul 3, 2026", "day": "Fri", "wk": "Wk 15", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1300y — 6×225y with 25sec rest. Medium day — quality over hustle. Easy — recovery week.\nEasy run 30min @ Z1 — conversational pace.", "weekNote": "RECOVERY WEEK — Let Phase 2 quality work consolidate. Phase 3 is big.", "wkHrs": ""}, {"checked": false, "date": "Sat Jul 4, 2026", "day": "Sat", "wk": "Wk 15", "phase": "P2 · Build 1", "type": "Long Run", "detail": "Long run 1hr 40min @ Z1-2 — easy and relaxed. Settle into a rhythm early — the back 30min will test your mental endurance.", "weekNote": "RECOVERY WEEK — Let Phase 2 quality work consolidate. Phase 3 is big.", "wkHrs": ""}, {"checked": false, "date": "Sun Jul 5, 2026", "day": "Sun", "wk": "Wk 15", "phase": "P2 · Build 1", "type": "Long Ride", "detail": "Long ride 4hr @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Let Phase 2 quality work consolidate. Phase 3 is big.", "wkHrs": ""}, {"checked": false, "date": "Mon Jul 6, 2026", "day": "Mon", "wk": "Wk 16", "phase": "P2 · Build 1", "type": "Swim+Str", "detail": "DRILL SWIM 1975y — WU 400y easy. 5×200y: 75y drill set (scull / catch-up / fingertip drag) + 125y free. 25sec rest. 5×75y pull buoy 15sec rest. CD 100y. Focus: maintain DPS (distance per stroke) even as the total distance grows.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "FTP bike intervals Tuesday. Tempo run Wednesday. Never quality back to back.", "wkHrs": "19.0h"}, {"checked": false, "date": "Tue Jul 7, 2026", "day": "Tue", "wk": "Wk 16", "phase": "P2 · Build 1", "type": "Swim+Bike", "detail": "Short swim 1400y — 7×220y with 22sec rest. Hold race pace on last 3 reps.\nFTP BIKE: 20min warm-up → 2×20min @ Z4 (threshold — hard but sustainable) with 5min easy between each → 20min cool-down.", "weekNote": "FTP bike intervals Tuesday. Tempo run Wednesday. Never quality back to back.", "wkHrs": ""}, {"checked": false, "date": "Wed Jul 8, 2026", "day": "Wed", "wk": "Wk 16", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 3050y — 7×425y with 28sec rest. These 425y reps are your race-day building blocks.\nTempo run 75min total: 12min easy warm-up → 51min @ Z3-4 (comfortably hard, 3–4 words max) → 12min easy cool-down.", "weekNote": "FTP bike intervals Tuesday. Tempo run Wednesday. Never quality back to back.", "wkHrs": ""}, {"checked": false, "date": "Thu Jul 9, 2026", "day": "Thu", "wk": "Wk 16", "phase": "P2 · Build 1", "type": "Bike+Str", "detail": "Easy ride 95min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "FTP bike intervals Tuesday. Tempo run Wednesday. Never quality back to back.", "wkHrs": ""}, {"checked": false, "date": "Fri Jul 10, 2026", "day": "Fri", "wk": "Wk 16", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1850y — 5×325y with 25sec rest + 2×100y race pace.\nEasy run 45min @ Z1 — conversational pace.", "weekNote": "FTP bike intervals Tuesday. Tempo run Wednesday. Never quality back to back.", "wkHrs": ""}, {"checked": false, "date": "Sat Jul 11, 2026", "day": "Sat", "wk": "Wk 16", "phase": "P2 · Build 1", "type": "Long Run", "detail": "Long run 2hr 40min @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "FTP bike intervals Tuesday. Tempo run Wednesday. Never quality back to back.", "wkHrs": ""}, {"checked": false, "date": "Sun Jul 12, 2026", "day": "Sun", "wk": "Wk 16", "phase": "P2 · Build 1", "type": "Long Ride", "detail": "Long ride 6hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm. Think in 2hr mental blocks.", "weekNote": "FTP bike intervals Tuesday. Tempo run Wednesday. Never quality back to back.", "wkHrs": ""}, {"checked": false, "date": "Mon Jul 13, 2026", "day": "Mon", "wk": "Wk 17", "phase": "P2 · Build 1", "type": "Swim+Str", "detail": "DRILL SWIM 2075y — WU 400y easy. 6×200y: 50y scull + catch-up / 150y free with a single stroke cue. 20sec rest. 5×75y counting strokes 15sec rest. CD 0y. Focus: technique holding up under moderate volume — notice when it breaks down.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "All three quality sessions this week. Brick Sunday. Biggest Phase 2 week.", "wkHrs": "20.1h"}, {"checked": false, "date": "Tue Jul 14, 2026", "day": "Tue", "wk": "Wk 17", "phase": "P2 · Build 1", "type": "Swim+Bike", "detail": "Short swim 1500y — 15×110y with 16sec rest. Short rest = more race-like. Hold form throughout.\nFTP BIKE: 20min warm-up → 2×20min @ Z4 (threshold — hard but sustainable) with 5min easy between each → 20min cool-down.", "weekNote": "All three quality sessions this week. Brick Sunday. Biggest Phase 2 week.", "wkHrs": ""}, {"checked": false, "date": "Wed Jul 15, 2026", "day": "Wed", "wk": "Wk 17", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 3275y — 10×325y with 22sec rest. First 3275y session — 79% of race distance.\nTempo run 80min total: 13min easy warm-up → 54min @ Z3-4 (comfortably hard, 3–4 words max) → 13min easy cool-down.", "weekNote": "All three quality sessions this week. Brick Sunday. Biggest Phase 2 week.", "wkHrs": ""}, {"checked": false, "date": "Thu Jul 16, 2026", "day": "Thu", "wk": "Wk 17", "phase": "P2 · Build 1", "type": "Bike+Str", "detail": "Easy ride 95min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "All three quality sessions this week. Brick Sunday. Biggest Phase 2 week.", "wkHrs": ""}, {"checked": false, "date": "Fri Jul 17, 2026", "day": "Fri", "wk": "Wk 17", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1975y — 6×325y with 25sec rest. Last 2 reps at race pace.\nINTERVALS 50min total: 10min warm-up → 5×(3min @ Z5 very hard / 3min easy jog) → 10min cool-down. Z5 = can barely say your name. Controlled, not panicked.", "weekNote": "All three quality sessions this week. Brick Sunday. Biggest Phase 2 week.", "wkHrs": ""}, {"checked": false, "date": "Sat Jul 18, 2026", "day": "Sat", "wk": "Wk 17", "phase": "P2 · Build 1", "type": "Long Run", "detail": "Long run 2hr 50min @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "All three quality sessions this week. Brick Sunday. Biggest Phase 2 week.", "wkHrs": ""}, {"checked": false, "date": "Sun Jul 19, 2026", "day": "Sun", "wk": "Wk 17", "phase": "P2 · Build 1", "type": "Brick", "detail": "Long ride 7hr @ Z2. Eat every 30min. Cadence 85–90rpm. Think in 2hr mental blocks.\n→ BRICK: immediately after — 20min easy run off the bike — practice your nutrition and T2. Run at easy Z2 to practice nutrition. Don't stop between bike and run.", "weekNote": "All three quality sessions this week. Brick Sunday. Biggest Phase 2 week.", "wkHrs": ""}, {"checked": false, "date": "Mon Jul 20, 2026", "day": "Mon", "wk": "Wk 18", "phase": "P2 · Build 1", "type": "Swim+Str", "detail": "DRILL SWIM 1650y — WU 300y easy. 8×100y: 50y drill rotation (any) / 50y easy free. 20sec rest. CD 250y. Recovery week — smooth and easy. Reinforce every drill cue you've built this phase.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RECOVERY WEEK — Phase 2 complete. You have become a triathlete.", "wkHrs": "13.9h"}, {"checked": false, "date": "Tue Jul 21, 2026", "day": "Tue", "wk": "Wk 18", "phase": "P2 · Build 1", "type": "Swim+Bike", "detail": "Easy swim 1000y — 5×220y with 40sec rest. Recovery week — relaxed effort.\nEasy ride 110min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Phase 2 complete. You have become a triathlete.", "wkHrs": ""}, {"checked": false, "date": "Wed Jul 22, 2026", "day": "Wed", "wk": "Wk 18", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 2400y — 11×225y with 18sec rest. High volume — even pace all the way. Easy — recovery week, no effort.\nEasy run 50min @ Z2 — conversational pace. Comfortable and controlled. No watch pressure.", "weekNote": "RECOVERY WEEK — Phase 2 complete. You have become a triathlete.", "wkHrs": ""}, {"checked": false, "date": "Thu Jul 23, 2026", "day": "Thu", "wk": "Wk 18", "phase": "P2 · Build 1", "type": "Bike+Str", "detail": "Easy ride 70min @ Z2. Smooth cadence 85–90rpm. Very easy — recovery week.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "RECOVERY WEEK — Phase 2 complete. You have become a triathlete.", "wkHrs": ""}, {"checked": false, "date": "Fri Jul 24, 2026", "day": "Fri", "wk": "Wk 18", "phase": "P2 · Build 1", "type": "Swim+Run", "detail": "SWIM 1525y — 7×225y with 22sec rest. Steady race-pace effort. Easy — recovery week.\nEasy run 30min @ Z1 — conversational pace.", "weekNote": "RECOVERY WEEK — Phase 2 complete. You have become a triathlete.", "wkHrs": ""}, {"checked": false, "date": "Sat Jul 25, 2026", "day": "Sat", "wk": "Wk 18", "phase": "P2 · Build 1", "type": "Long Run", "detail": "Long run 1hr 55min @ Z1-2 — easy and relaxed. Settle into a rhythm early — the back 30min will test your mental endurance.", "weekNote": "RECOVERY WEEK — Phase 2 complete. You have become a triathlete.", "wkHrs": ""}, {"checked": false, "date": "Sun Jul 26, 2026", "day": "Sun", "wk": "Wk 18", "phase": "P2 · Build 1", "type": "Long Ride", "detail": "Long ride 4hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Phase 2 complete. You have become a triathlete.", "wkHrs": ""}, {"checked": false, "date": "Mon Jul 27, 2026", "day": "Mon", "wk": "Wk 19", "phase": "P3 · Build 2", "type": "Swim+Str", "detail": "DRILL SWIM 2175y — WU 450y easy. 6×200y: 50y drill mix / 25y scull / 125y strong free. 25sec rest. 5×75y pull buoy 15sec rest. CD 0y. Focus: maintain form when tired — the back half of each rep is where technique matters most.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "Phase 3 begins. FTP + tempo same week — on different days. 7hr long ride Sunday.", "wkHrs": "20.6h"}, {"checked": false, "date": "Tue Jul 28, 2026", "day": "Tue", "wk": "Wk 19", "phase": "P3 · Build 2", "type": "Swim+Bike", "detail": "Short swim 1600y — 8×220y with 20sec rest. Phase 3 Tuesday swim — race-pace reps.\nFTP BIKE: 20min warm-up → 3×15min @ Z4 (threshold — hard but sustainable) with 5min easy between each → 20min cool-down.", "weekNote": "Phase 3 begins. FTP + tempo same week — on different days. 7hr long ride Sunday.", "wkHrs": ""}, {"checked": false, "date": "Wed Jul 29, 2026", "day": "Wed", "wk": "Wk 19", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 3500y — 8×425y with 25sec rest. Hold race pace on last 3 reps.\nTempo run 80min total: 13min easy warm-up → 54min @ Z3-4 (comfortably hard, 3–4 words max) → 13min easy cool-down.", "weekNote": "Phase 3 begins. FTP + tempo same week — on different days. 7hr long ride Sunday.", "wkHrs": ""}, {"checked": false, "date": "Thu Jul 30, 2026", "day": "Thu", "wk": "Wk 19", "phase": "P3 · Build 2", "type": "Bike+Str", "detail": "Easy ride 100min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "Phase 3 begins. FTP + tempo same week — on different days. 7hr long ride Sunday.", "wkHrs": ""}, {"checked": false, "date": "Fri Jul 31, 2026", "day": "Fri", "wk": "Wk 19", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 2075y — 19×100y with 18sec rest. High rep count — practice even pacing.\nEasy run 50min @ Z1 — conversational pace.", "weekNote": "Phase 3 begins. FTP + tempo same week — on different days. 7hr long ride Sunday.", "wkHrs": ""}, {"checked": false, "date": "Sat Aug 1, 2026", "day": "Sat", "wk": "Wk 19", "phase": "P3 · Build 2", "type": "Long Run", "detail": "Long run 2hr 55min @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "Phase 3 begins. FTP + tempo same week — on different days. 7hr long ride Sunday.", "wkHrs": ""}, {"checked": false, "date": "Sun Aug 2, 2026", "day": "Sun", "wk": "Wk 19", "phase": "P3 · Build 2", "type": "Long Ride", "detail": "Long ride 7hr @ Z2. Eat every 30min. Cadence 85–90rpm. Think in 2hr mental blocks.", "weekNote": "Phase 3 begins. FTP + tempo same week — on different days. 7hr long ride Sunday.", "wkHrs": ""}, {"checked": false, "date": "Mon Aug 3, 2026", "day": "Mon", "wk": "Wk 20", "phase": "P3 · Build 2", "type": "Swim+Str", "detail": "DRILL SWIM 2300y — WU 400y easy. 7×200y: 50y drill set / 150y race-pace free with stroke count. 20sec rest. CD 0y. Focus: race-pace technique — don't let form slip when intensity rises.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "Long run hits 3hr (180min) for first time Saturday. Biggest week yet. Brick Sunday.", "wkHrs": "21.7h"}, {"checked": false, "date": "Tue Aug 4, 2026", "day": "Tue", "wk": "Wk 20", "phase": "P3 · Build 2", "type": "Swim+Bike", "detail": "Short swim 1750y — 7×275y with 22sec rest. Descend last 3 reps — faster on each one.\nFTP BIKE: 20min warm-up → 3×15min @ Z4 (threshold — hard but sustainable) with 5min easy between each → 20min cool-down.", "weekNote": "Long run hits 3hr (180min) for first time Saturday. Biggest week yet. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Wed Aug 5, 2026", "day": "Wed", "wk": "Wk 20", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 3725y — 17×225y with 18sec rest. Descend the last 5 — get faster on each one.\nTempo run 83min total: 13min easy warm-up → 57min @ Z3-4 (comfortably hard, 3–4 words max) → 13min easy cool-down.", "weekNote": "Long run hits 3hr (180min) for first time Saturday. Biggest week yet. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Thu Aug 6, 2026", "day": "Thu", "wk": "Wk 20", "phase": "P3 · Build 2", "type": "Bike+Str", "detail": "Easy ride 100min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "Long run hits 3hr (180min) for first time Saturday. Biggest week yet. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Fri Aug 7, 2026", "day": "Fri", "wk": "Wk 20", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 2175y — 5×425y with 30sec rest. Threshold effort on last 2.\nINTERVALS 56min total: 10min warm-up → 6×(3min @ Z5 very hard / 2min easy jog) → 10min cool-down. Z5 = can barely say your name. Controlled, not panicked.", "weekNote": "Long run hits 3hr (180min) for first time Saturday. Biggest week yet. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Sat Aug 8, 2026", "day": "Sat", "wk": "Wk 20", "phase": "P3 · Build 2", "type": "Long Run", "detail": "Long run 3hr @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "Long run hits 3hr (180min) for first time Saturday. Biggest week yet. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Sun Aug 9, 2026", "day": "Sun", "wk": "Wk 20", "phase": "P3 · Build 2", "type": "Brick", "detail": "Long ride 7hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm. Think in 2hr mental blocks.\n→ BRICK: immediately after — 20min easy run off the bike — practice your nutrition and T2. Run at easy Z2 to practice nutrition. Don't stop between bike and run.", "weekNote": "Long run hits 3hr (180min) for first time Saturday. Biggest week yet. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Mon Aug 10, 2026", "day": "Mon", "wk": "Wk 21", "phase": "P3 · Build 2", "type": "Swim+Str", "detail": "DRILL SWIM 1750y — WU 350y easy. 8×100y: 25y catch-up / 25y fist drill / 25y single-arm / 25y full free. 20sec rest. CD 150y. Recovery week — re-groove technique at easy pace. Perfect reps only.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RECOVERY WEEK — Long run 2hr still. Let the big weeks absorb.", "wkHrs": "15.1h"}, {"checked": false, "date": "Tue Aug 11, 2026", "day": "Tue", "wk": "Wk 21", "phase": "P3 · Build 2", "type": "Swim+Bike", "detail": "Easy swim 1200y — 6×220y with 35sec rest. Recovery week — no quality, just volume.\nEasy ride 120min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Long run 2hr still. Let the big weeks absorb.", "wkHrs": ""}, {"checked": false, "date": "Wed Aug 12, 2026", "day": "Wed", "wk": "Wk 21", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 2625y — 6×425y with 32sec rest. 425y race-length repeats. Easy — recovery week, no effort.\nEasy run 55min @ Z2 — conversational pace. Comfortable and controlled. No watch pressure.", "weekNote": "RECOVERY WEEK — Long run 2hr still. Let the big weeks absorb.", "wkHrs": ""}, {"checked": false, "date": "Thu Aug 13, 2026", "day": "Thu", "wk": "Wk 21", "phase": "P3 · Build 2", "type": "Bike+Str", "detail": "Easy ride 75min @ Z2. Smooth cadence 85–90rpm. Very easy — recovery week.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "RECOVERY WEEK — Long run 2hr still. Let the big weeks absorb.", "wkHrs": ""}, {"checked": false, "date": "Fri Aug 14, 2026", "day": "Fri", "wk": "Wk 21", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 1650y — 5×325y with 28sec rest. Building medium-day endurance. Easy — recovery week.\nEasy run 35min @ Z1 — conversational pace.", "weekNote": "RECOVERY WEEK — Long run 2hr still. Let the big weeks absorb.", "wkHrs": ""}, {"checked": false, "date": "Sat Aug 15, 2026", "day": "Sat", "wk": "Wk 21", "phase": "P3 · Build 2", "type": "Long Run", "detail": "Long run 2hr @ Z1-2 — easy and relaxed. Break it into 4 blocks of 30min mentally.", "weekNote": "RECOVERY WEEK — Long run 2hr still. Let the big weeks absorb.", "wkHrs": ""}, {"checked": false, "date": "Sun Aug 16, 2026", "day": "Sun", "wk": "Wk 21", "phase": "P3 · Build 2", "type": "Long Ride", "detail": "Long ride 5hr @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Long run 2hr still. Let the big weeks absorb.", "wkHrs": ""}, {"checked": false, "date": "Mon Aug 17, 2026", "day": "Mon", "wk": "Wk 22", "phase": "P3 · Build 2", "type": "Swim+Str", "detail": "DRILL SWIM 2400y — WU 450y easy. 5×250y: 75y drill set / 175y controlled free. 20sec rest. 5×75y at threshold pace 15sec rest. CD 0y. Focus: hold DPS at threshold — count strokes, keep them efficient.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "FTP advancing — 3×15min sets. Tempo 80min. Long ride 7.5hr Sunday.", "wkHrs": "21.8h"}, {"checked": false, "date": "Tue Aug 18, 2026", "day": "Tue", "wk": "Wk 22", "phase": "P3 · Build 2", "type": "Swim+Bike", "detail": "Short swim 1850y — 17×110y with 15sec rest. Shortest rest yet — simulate race breathing.\nFTP BIKE: 20min warm-up → 3×15min @ Z4 (threshold — hard but sustainable) with 5min easy between each → 20min cool-down.", "weekNote": "FTP advancing — 3×15min sets. Tempo 80min. Long ride 7.5hr Sunday.", "wkHrs": ""}, {"checked": false, "date": "Wed Aug 19, 2026", "day": "Wed", "wk": "Wk 22", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 3925y — 12×325y with 22sec rest. Race-pace reps. Every one is practice for Nov 7.\nTempo run 89min total: 14min easy warm-up → 61min @ Z3-4 (comfortably hard, 3–4 words max) → 14min easy cool-down.", "weekNote": "FTP advancing — 3×15min sets. Tempo 80min. Long ride 7.5hr Sunday.", "wkHrs": ""}, {"checked": false, "date": "Thu Aug 20, 2026", "day": "Thu", "wk": "Wk 22", "phase": "P3 · Build 2", "type": "Bike+Str", "detail": "Easy ride 105min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "FTP advancing — 3×15min sets. Tempo 80min. Long ride 7.5hr Sunday.", "wkHrs": ""}, {"checked": false, "date": "Fri Aug 21, 2026", "day": "Fri", "wk": "Wk 22", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 2300y — 7×325y with 25sec rest. Solid medium session.\nEasy run 50min @ Z1 — conversational pace.", "weekNote": "FTP advancing — 3×15min sets. Tempo 80min. Long ride 7.5hr Sunday.", "wkHrs": ""}, {"checked": false, "date": "Sat Aug 22, 2026", "day": "Sat", "wk": "Wk 22", "phase": "P3 · Build 2", "type": "Long Run", "detail": "Long run 3hr @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "FTP advancing — 3×15min sets. Tempo 80min. Long ride 7.5hr Sunday.", "wkHrs": ""}, {"checked": false, "date": "Sun Aug 23, 2026", "day": "Sun", "wk": "Wk 22", "phase": "P3 · Build 2", "type": "Long Ride", "detail": "Long ride 7hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm. Think in 2hr mental blocks.", "weekNote": "FTP advancing — 3×15min sets. Tempo 80min. Long ride 7.5hr Sunday.", "wkHrs": ""}, {"checked": false, "date": "Mon Aug 24, 2026", "day": "Mon", "wk": "Wk 23", "phase": "P3 · Build 2", "type": "Swim+Str", "detail": "DRILL SWIM 2625y — WU 500y easy. 6×250y: 50y drill / 200y free (last 50y at race pace). 20sec rest. 6×75y pull buoy 15sec rest. CD 0y. Focus: transition from drill directly into race-pace effort — carry the feel.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RACE SWIM DISTANCE: 3800m on Wednesday swim long. Brick Sunday.", "wkHrs": "22.8h"}, {"checked": false, "date": "Tue Aug 25, 2026", "day": "Tue", "wk": "Wk 23", "phase": "P3 · Build 2", "type": "Swim+Bike", "detail": "Short swim 2000y — 8×275y with 20sec rest. 275y reps are long and race-specific. Hold pace.\nFTP BIKE: 20min warm-up → 3×15min @ Z4 (threshold — hard but sustainable) with 5min easy between each → 20min cool-down.", "weekNote": "RACE SWIM DISTANCE: 3800m on Wednesday swim long. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Wed Aug 26, 2026", "day": "Wed", "wk": "Wk 23", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "FULL RACE SWIM — 4150y (2.4 miles) CONTINUOUS. No stops. Start slow, hold steady, finish strong. This is the biggest swim of your life. Prove to yourself you can do the distance before race day. 🎉\nTempo run 90min total: 15min easy warm-up → 60min @ Z3-4 (comfortably hard, 3–4 words max) → 15min easy cool-down. Split the swim and run across AM/PM.", "weekNote": "RACE SWIM DISTANCE: 3800m on Wednesday swim long. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Thu Aug 27, 2026", "day": "Thu", "wk": "Wk 23", "phase": "P3 · Build 2", "type": "Bike+Str", "detail": "Easy ride 105min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "RACE SWIM DISTANCE: 3800m on Wednesday swim long. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Fri Aug 28, 2026", "day": "Fri", "wk": "Wk 23", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 2400y — 11×225y with 18sec rest. Race-pace on last 4.\nINTERVALS 56min total: 10min warm-up → 6×(3min @ Z5 very hard / 2min easy jog) → 10min cool-down. Z5 = can barely say your name. Controlled, not panicked.", "weekNote": "RACE SWIM DISTANCE: 3800m on Wednesday swim long. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Sat Aug 29, 2026", "day": "Sat", "wk": "Wk 23", "phase": "P3 · Build 2", "type": "Long Run", "detail": "Long run 3hr @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "RACE SWIM DISTANCE: 3800m on Wednesday swim long. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Sun Aug 30, 2026", "day": "Sun", "wk": "Wk 23", "phase": "P3 · Build 2", "type": "Brick", "detail": "BRICK: Long ride 7hr @ Z2 → run 25min @ easy Z2. Nutrition check on a 7hr ride — your stomach at hour 5 and 6 is what matters on race day. Document everything you ate and how you felt.", "weekNote": "RACE SWIM DISTANCE: 3800m on Wednesday swim long. Brick Sunday.", "wkHrs": ""}, {"checked": false, "date": "Mon Aug 31, 2026", "day": "Mon", "wk": "Wk 24", "phase": "P3 · Build 2", "type": "Swim+Str", "detail": "DRILL SWIM 1975y — WU 400y easy. 7×150y: 50y drill mix / 100y easy free. 25sec rest. CD 0y. Recovery week — long smooth strokes only. You've earned the easy day.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RECOVERY WEEK — Arrive at Peak phase completely fresh. This week matters.", "wkHrs": "16.1h"}, {"checked": false, "date": "Tue Sep 1, 2026", "day": "Tue", "wk": "Wk 24", "phase": "P3 · Build 2", "type": "Swim+Bike", "detail": "Easy swim 1400y — 7×220y with 35sec rest. Recovery week — arrive at Peak fresh.\nEasy ride 130min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Arrive at Peak phase completely fresh. This week matters.", "wkHrs": ""}, {"checked": false, "date": "Wed Sep 2, 2026", "day": "Wed", "wk": "Wk 24", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 2850y — 1×1650y continuous, rest 2min, 5×250y with 25sec rest. Push the 1650y. Easy — recovery week, no effort.\nEasy run 60min @ Z2 — conversational pace. Comfortable and controlled. No watch pressure.", "weekNote": "RECOVERY WEEK — Arrive at Peak phase completely fresh. This week matters.", "wkHrs": ""}, {"checked": false, "date": "Thu Sep 3, 2026", "day": "Thu", "wk": "Wk 24", "phase": "P3 · Build 2", "type": "Bike+Str", "detail": "Easy ride 80min @ Z2. Smooth cadence 85–90rpm. Very easy — recovery week.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "RECOVERY WEEK — Arrive at Peak phase completely fresh. This week matters.", "wkHrs": ""}, {"checked": false, "date": "Fri Sep 4, 2026", "day": "Fri", "wk": "Wk 24", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 1850y — 5×325y with 25sec rest + 2×100y race pace. Easy — recovery week.\nEasy run 35min @ Z1 — conversational pace.", "weekNote": "RECOVERY WEEK — Arrive at Peak phase completely fresh. This week matters.", "wkHrs": ""}, {"checked": false, "date": "Sat Sep 5, 2026", "day": "Sat", "wk": "Wk 24", "phase": "P3 · Build 2", "type": "Long Run", "detail": "Long run 2hr @ Z1-2 — easy and relaxed. Break it into 4 blocks of 30min mentally.", "weekNote": "RECOVERY WEEK — Arrive at Peak phase completely fresh. This week matters.", "wkHrs": ""}, {"checked": false, "date": "Sun Sep 6, 2026", "day": "Sun", "wk": "Wk 24", "phase": "P3 · Build 2", "type": "Long Ride", "detail": "Long ride 5hr 30min @ Z2. Eat every 30min. Cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Arrive at Peak phase completely fresh. This week matters.", "wkHrs": ""}, {"checked": false, "date": "Mon Sep 7, 2026", "day": "Mon", "wk": "Wk 25", "phase": "P3 · Build 2", "type": "Swim+Str", "detail": "DRILL SWIM 2725y — WU 500y easy. 6×300y: 75y drill mix / 225y free (last 100y at race pace). 20sec rest. 4×50y sprint with technique cue 15sec rest. CD 0y. Focus: hold form at race effort — this is race-day rehearsal.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "Peak Phase 3. FTP 3×20min. Tempo 90min. 8hr long ride.", "wkHrs": "22.9h"}, {"checked": false, "date": "Tue Sep 8, 2026", "day": "Tue", "wk": "Wk 25", "phase": "P3 · Build 2", "type": "Swim+Bike", "detail": "Short swim 2200y — 10×220y with 16sec rest. Peak phase Tuesday swim — race pace throughout.\nFTP BIKE: 20min warm-up → 3×20min @ Z4 (threshold — hard but sustainable) with 5min easy between each → 20min cool-down.", "weekNote": "Peak Phase 3. FTP 3×20min. Tempo 90min. 8hr long ride.", "wkHrs": ""}, {"checked": false, "date": "Wed Sep 9, 2026", "day": "Wed", "wk": "Wk 25", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 4150y — 1×2175y continuous, rest 3min, 9×225y with 18sec rest. Longest long swim yet.\nTempo run 90min total: 15min easy warm-up → 60min @ Z3-4 (comfortably hard, 3–4 words max) → 15min easy cool-down.", "weekNote": "Peak Phase 3. FTP 3×20min. Tempo 90min. 8hr long ride.", "wkHrs": ""}, {"checked": false, "date": "Thu Sep 10, 2026", "day": "Thu", "wk": "Wk 25", "phase": "P3 · Build 2", "type": "Bike+Str", "detail": "Easy ride 110min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "Peak Phase 3. FTP 3×20min. Tempo 90min. 8hr long ride.", "wkHrs": ""}, {"checked": false, "date": "Fri Sep 11, 2026", "day": "Fri", "wk": "Wk 25", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 2525y — 23×100y with 15sec rest. Race-pace simulation — very short rest.\nEasy run 55min @ Z1 — conversational pace.", "weekNote": "Peak Phase 3. FTP 3×20min. Tempo 90min. 8hr long ride.", "wkHrs": ""}, {"checked": false, "date": "Sat Sep 12, 2026", "day": "Sat", "wk": "Wk 25", "phase": "P3 · Build 2", "type": "Long Run", "detail": "Long run 3hr @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "Peak Phase 3. FTP 3×20min. Tempo 90min. 8hr long ride.", "wkHrs": ""}, {"checked": false, "date": "Sun Sep 13, 2026", "day": "Sun", "wk": "Wk 25", "phase": "P3 · Build 2", "type": "Long Ride", "detail": "Long ride 7hr @ Z2. Same kit, nutrition, and route type as race day. Dress rehearsal. Eat every 30min without exception.", "weekNote": "Peak Phase 3. FTP 3×20min. Tempo 90min. 8hr long ride.", "wkHrs": ""}, {"checked": false, "date": "Mon Sep 14, 2026", "day": "Mon", "wk": "Wk 26", "phase": "P3 · Build 2", "type": "Swim+Str", "detail": "DRILL SWIM 2850y — WU 500y easy. 6×300y: 50y scull / 250y free (descend reps 4–6). 20sec rest. 6×50y near-max effort with stroke-count check 15sec rest. CD 0y. Focus: final long drill day. Every stroke should be intentional.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "All three quality sessions. Brick Sunday. Race sim nutrition practice.", "wkHrs": "23.3h"}, {"checked": false, "date": "Tue Sep 15, 2026", "day": "Tue", "wk": "Wk 26", "phase": "P3 · Build 2", "type": "Swim+Bike", "detail": "Short swim 2200y — 8×275y with 18sec rest. Hold race pace on every rep — no coasting.\nFTP BIKE: 20min warm-up → 3×20min @ Z4 (threshold — hard but sustainable) with 5min easy between each → 20min cool-down.", "weekNote": "All three quality sessions. Brick Sunday. Race sim nutrition practice.", "wkHrs": ""}, {"checked": false, "date": "Wed Sep 16, 2026", "day": "Wed", "wk": "Wk 26", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "FULL RACE SWIM — 4150y (2.4 miles) CONTINUOUS. No stops. Start slow, hold steady, finish strong. This is the biggest swim of your life — prove to yourself you can cover the distance before race day. 🎉\nTempo run 90min total: 15min easy warm-up → 60min @ Z3-4 (comfortably hard, 3–4 words max) → 15min easy cool-down. Split swim and run across AM/PM.", "weekNote": "All three quality sessions. Brick Sunday. Race sim nutrition practice.", "wkHrs": ""}, {"checked": false, "date": "Thu Sep 17, 2026", "day": "Thu", "wk": "Wk 26", "phase": "P3 · Build 2", "type": "Bike+Str", "detail": "Easy ride 110min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "All three quality sessions. Brick Sunday. Race sim nutrition practice.", "wkHrs": ""}, {"checked": false, "date": "Fri Sep 18, 2026", "day": "Fri", "wk": "Wk 26", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 2625y — 8×325y with 22sec rest. Race effort on last 3.\nINTERVALS 62min total: 10min warm-up → 7×(3min @ Z5 very hard / 2min easy jog) → 10min cool-down. Z5 = can barely say your name. Controlled, not panicked.", "weekNote": "All three quality sessions. Brick Sunday. Race sim nutrition practice.", "wkHrs": ""}, {"checked": false, "date": "Sat Sep 19, 2026", "day": "Sat", "wk": "Wk 26", "phase": "P3 · Build 2", "type": "Long Run", "detail": "Long run 3hr @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "All three quality sessions. Brick Sunday. Race sim nutrition practice.", "wkHrs": ""}, {"checked": false, "date": "Sun Sep 20, 2026", "day": "Sun", "wk": "Wk 26", "phase": "P3 · Build 2", "type": "Brick", "detail": "BRICK: Long ride 7hr @ Z2 → run 25min @ easy Z2. Last major brick before taper. Nutrition should be completely locked in by now — no experimenting today.", "weekNote": "All three quality sessions. Brick Sunday. Race sim nutrition practice.", "wkHrs": ""}, {"checked": false, "date": "Mon Sep 21, 2026", "day": "Mon", "wk": "Wk 27", "phase": "P3 · Build 2", "type": "Swim+Str", "detail": "DRILL SWIM 2175y — WU 400y easy. 7×175y: 50y drill of choice / 125y easy free. 25sec rest. CD 0y. Recovery week — smooth and efficient. Lock in everything you've built.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "RECOVERY WEEK — Last one before Peak phase. Arrive completely fresh.", "wkHrs": "17.2h"}, {"checked": false, "date": "Tue Sep 22, 2026", "day": "Tue", "wk": "Wk 27", "phase": "P3 · Build 2", "type": "Swim+Bike", "detail": "Easy swim 1600y — 8×220y with 35sec rest. Recovery week — smooth and easy.\nEasy ride 140min @ Z2. Smooth cadence 85–90rpm.", "weekNote": "RECOVERY WEEK — Last one before Peak phase. Arrive completely fresh.", "wkHrs": ""}, {"checked": false, "date": "Wed Sep 23, 2026", "day": "Wed", "wk": "Wk 27", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 3050y — 7×425y with 28sec rest. These 425y reps are your race-day building blocks. Easy — recovery week, no effort.\nEasy run 65min @ Z2 — conversational pace. Comfortable and controlled. No watch pressure.", "weekNote": "RECOVERY WEEK — Last one before Peak phase. Arrive completely fresh.", "wkHrs": ""}, {"checked": false, "date": "Thu Sep 24, 2026", "day": "Thu", "wk": "Wk 27", "phase": "P3 · Build 2", "type": "Bike+Str", "detail": "Easy ride 85min @ Z2. Smooth cadence 85–90rpm. Very easy — recovery week.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "RECOVERY WEEK — Last one before Peak phase. Arrive completely fresh.", "wkHrs": ""}, {"checked": false, "date": "Fri Sep 25, 2026", "day": "Fri", "wk": "Wk 27", "phase": "P3 · Build 2", "type": "Swim+Run", "detail": "SWIM 2075y — 19×100y with 18sec rest. High rep count — practice even pacing. Easy — recovery week.\nEasy run 40min @ Z1 — conversational pace.", "weekNote": "RECOVERY WEEK — Last one before Peak phase. Arrive completely fresh.", "wkHrs": ""}, {"checked": false, "date": "Sat Sep 26, 2026", "day": "Sat", "wk": "Wk 27", "phase": "P3 · Build 2", "type": "Long Run", "detail": "Long run 2hr @ Z1-2 — easy and relaxed. Break it into 4 blocks of 30min mentally.", "weekNote": "RECOVERY WEEK — Last one before Peak phase. Arrive completely fresh.", "wkHrs": ""}, {"checked": false, "date": "Sun Sep 27, 2026", "day": "Sun", "wk": "Wk 27", "phase": "P3 · Build 2", "type": "Long Ride", "detail": "Long ride 6hr @ Z2. Eat every 30min. Cadence 85–90rpm. Think in 2hr mental blocks.", "weekNote": "RECOVERY WEEK — Last one before Peak phase. Arrive completely fresh.", "wkHrs": ""}, {"checked": false, "date": "Mon Sep 28, 2026", "day": "Mon", "wk": "Wk 28", "phase": "P4 · Peak", "type": "Swim+Str", "detail": "DRILL SWIM 2850y — WU 500y easy. 5×350y: 50y drill mix / 300y race-pace free. 20sec rest. 5×50y at race pace 15sec rest. CD 0y. Focus: race-pace technique — every stroke matters now. Carry the drill feel into race effort.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight — controlled reps.", "weekNote": "PEAK WEEK 1. Best fitness of your life is being built right now.", "wkHrs": "23.1h"}, {"checked": false, "date": "Tue Sep 29, 2026", "day": "Tue", "wk": "Wk 28", "phase": "P4 · Peak", "type": "Swim+Bike", "detail": "Short swim 2000y — 10×220y with 16sec rest. Last quality Tuesday swim of the plan.\nFTP BIKE: 20min warm-up → 3×20min @ Z4 (threshold — hard but sustainable) with 5min easy between each → 20min cool-down.", "weekNote": "PEAK WEEK 1. Best fitness of your life is being built right now.", "wkHrs": ""}, {"checked": false, "date": "Wed Sep 30, 2026", "day": "Wed", "wk": "Wk 28", "phase": "P4 · Peak", "type": "Swim+Run", "detail": "SWIM 4150y — 1×2175y continuous, rest 3min, 9×225y with 18sec rest. Longest long swim yet.\nTempo run 90min total: 15min easy warm-up → 60min @ Z3-4 (comfortably hard, 3–4 words max) → 15min easy cool-down.", "weekNote": "PEAK WEEK 1. Best fitness of your life is being built right now.", "wkHrs": ""}, {"checked": false, "date": "Thu Oct 1, 2026", "day": "Thu", "wk": "Wk 28", "phase": "P4 · Peak", "type": "Bike+Str", "detail": "Easy ride 110min @ Z2. Smooth cadence 85–90rpm. Easy before Friday double day.\nStrength 45min LOWER BODY: trap-bar deadlift, Bulgarian split squats, step-ups with weight, single-leg RDL, hip thrust, Copenhagen plank, dead bugs, calf raises. Form over weight.", "weekNote": "PEAK WEEK 1. Best fitness of your life is being built right now.", "wkHrs": ""}, {"checked": false, "date": "Fri Oct 2, 2026", "day": "Fri", "wk": "Wk 28", "phase": "P4 · Peak", "type": "Swim+Run", "detail": "SWIM 2725y — 5×550y with 30sec rest. 550y reps = real race-specific work.\nEasy run 55min @ Z1 — conversational pace.", "weekNote": "PEAK WEEK 1. Best fitness of your life is being built right now.", "wkHrs": ""}, {"checked": false, "date": "Sat Oct 3, 2026", "day": "Sat", "wk": "Wk 28", "phase": "P4 · Peak", "type": "Long Run", "detail": "Long run 3hr @ Z2 — conversational pace the entire time. Start 30sec/mi slower than you think you should — the back half will be harder.", "weekNote": "PEAK WEEK 1. Best fitness of your life is being built right now.", "wkHrs": ""}, {"checked": false, "date": "Sun Oct 4, 2026", "day": "Sun", "wk": "Wk 28", "phase": "P4 · Peak", "type": "Long Ride", "detail": "Long ride 7hr @ Z2. Last long ride of the plan. Soak every minute of it in — hard work ends today. Taper starts Monday.", "weekNote": "PEAK WEEK 1. Best fitness of your life is being built right now.", "wkHrs": ""}, {"checked": false, "date": "Mon Oct 5, 2026", "day": "Mon", "wk": "Wk 29", "phase": "P4 · Peak", "type": "Swim+Str", "detail": "DRILL SWIM 2400y — WU 400y easy. 8×200y: 50y drill / 150y race-pace free. 20sec rest. 4×50y fast with clean technique 15sec rest. CD 0y. Final tune-up — clean technique at race speed. You've got this.\nStrength 45min UPPER BODY: bench press or push-up variations, DB rows, pull-ups or lat pulldown, overhead press, cable rows, face pulls, bicep curl, tricep pushdown. Moderate weight.", "weekNote": "Last 3 training days before taper. Keep quality short and sharp.", "wkHrs": "8.5h"}, {"checked": false, "date": "Tue Oct 6, 2026", "day": "Tue", "wk": "Wk 29", "phase": "P4 · Peak", "type": "Swim+Bike", "detail": "Short swim 1600y — 8×220y with 20sec rest + 4×55y @ race pace. Stay sharp in taper.\nMedium ride 75min @ Z2 with 3×5min @ Z4 sharp, 3min easy between. Stay neuromuscularly awake.", "weekNote": "Last 3 training days before taper. Keep quality short and sharp.", "wkHrs": ""}, {"checked": false, "date": "Wed Oct 7, 2026", "day": "Wed", "wk": "Wk 29", "phase": "P4 · Peak", "type": "Swim+Run", "detail": "SWIM 1975y — 9×225y with 20sec rest. Include 4×100y @ race pace at end.\n30min easy run @ Z2. Last run before taper.", "weekNote": "Last 3 training days before taper. Keep quality short and sharp.", "wkHrs": ""}, {"checked": false, "date": "Thu Oct 8, 2026", "day": "Thu", "wk": "Wk 29", "phase": "P5 · Taper", "type": "Bike+Str", "detail": "TAPER DAY 1. Easy spin 35min @ Z1. Nothing hard.\nAbbreviated strength: 2 sets upper body only, light weight. Bench, rows, face pulls.", "weekNote": "10-DAY TAPER: Oct 8–17. Short sessions only. Trust every session you've done.", "wkHrs": ""}, {"checked": false, "date": "Fri Oct 9, 2026", "day": "Fri", "wk": "Wk 29", "phase": "P5 · Taper", "type": "Swim+Run", "detail": "TAPER DAY 2. SWIM 1300y — 6×225y easy, 30sec rest. Smooth and calm.\n20min easy jog @ Z1.", "weekNote": "10-DAY TAPER: Oct 8–17. Short sessions only. Trust every session you've done.", "wkHrs": ""}, {"checked": false, "date": "Sat Oct 10, 2026", "day": "Sat", "wk": "Wk 29", "phase": "P5 · Taper", "type": "Long Run", "detail": "TAPER DAY 3. Easy run 40min @ Z1. Very gentle. Feel the freshness building — that's your fitness being stored.", "weekNote": "10-DAY TAPER: Oct 8–17. Short sessions only. Trust every session you've done.", "wkHrs": ""}, {"checked": false, "date": "Sun Oct 11, 2026", "day": "Sun", "wk": "Wk 29", "phase": "P5 · Taper", "type": "Long Ride", "detail": "TAPER DAY 4. Easy ride 50min @ Z1. Do not go hard.", "weekNote": "10-DAY TAPER: Oct 8–17. Short sessions only. Trust every session you've done.", "wkHrs": ""}, {"checked": false, "date": "Mon Oct 12, 2026", "day": "Mon", "wk": "Wk 30", "phase": "P5 · Taper", "type": "REST", "detail": "TAPER DAY 5. Full rest. Pack T1 and T2 bags carefully. Lay out all race gear.", "weekNote": "Race week — Ironman California, Sacramento. Race Sunday October 18, 2026.", "wkHrs": "2.5h"}, {"checked": false, "date": "Tue Oct 13, 2026", "day": "Tue", "wk": "Wk 30", "phase": "P5 · Taper", "type": "Swim+Bike", "detail": "Easy swim 1000y — 5×220y with 35sec rest. Taper week — short and calm.\nTAPER DAY 6. SWIM 875y — 4×225y very easy, 45sec rest. Calm and smooth. Nothing more today.", "weekNote": "Race week — Ironman California, Sacramento. Race Sunday October 18, 2026.", "wkHrs": ""}, {"checked": false, "date": "Wed Oct 14, 2026", "day": "Wed", "wk": "Wk 30", "phase": "P5 · Taper", "type": "Swim+Run", "detail": "TAPER DAY 7. SWIM 650y — 3×225y easy. Short and relaxed.\n10min easy jog @ Z1. Stay off your legs.", "weekNote": "Race week — Ironman California, Sacramento. Race Sunday October 18, 2026.", "wkHrs": ""}, {"checked": false, "date": "Thu Oct 15, 2026", "day": "Thu", "wk": "Wk 30", "phase": "P5 · Taper", "type": "Travel", "detail": "TAPER DAY 8. ✈️ FLY TO SACRAMENTO, CA. Easy 15min spin before leaving — confirm bike is race-ready. Eat well on travel day.", "weekNote": "Race week — Ironman California, Sacramento. Race Sunday October 18, 2026.", "wkHrs": ""}, {"checked": false, "date": "Fri Oct 16, 2026", "day": "Fri", "wk": "Wk 30", "phase": "P5 · Taper", "type": "Swim", "detail": "TAPER DAY 9. Easy 10min swim at Folsom Lake if possible — feel the open water. Check bike into transition. Walk T1 and T2. Mandatory athlete briefing. Big carb dinner. In bed by 9pm.", "weekNote": "Race week — Ironman California, Sacramento. Race Sunday October 18, 2026.", "wkHrs": ""}, {"checked": false, "date": "Sat Oct 17, 2026", "day": "Sat", "wk": "Wk 30", "phase": "P5 · Taper", "type": "REST", "detail": "TAPER DAY 10. REST. 10min easy shakeout walk only. Big breakfast. Big carb dinner — pasta or rice. Lay out ALL race gear in order. In bed by 9pm. Tomorrow is race day.", "weekNote": "Race week — Ironman California, Sacramento. Race Sunday October 18, 2026.", "wkHrs": ""}, {"checked": false, "date": "Sun Oct 18, 2026", "day": "Sun", "wk": "Wk 30", "phase": "P5 · Taper", "type": "Race", "detail": "🏅 IRONMAN CALIFORNIA — Sacramento, CA\nSWIM 2.4mi (4150y) Folsom Lake → T1 → BIKE 112mi Wine Country → T2 → RUN 26.2mi American River Parkway\n\nSWIM: Start easy. Find open water. Long strokes. You have swum this distance in training.\nBIKE: Z2-3 the entire 112mi. Flat and fast course — don't get sucked into going too hard early. Eat every 30min.\nRUN: Start 30sec/mi slower than your easy pace. Walk every aid station. Miles 18-23 will be dark — smile and keep moving.\n\nYou have trained 29 weeks for this moment. Trust every single session.", "weekNote": "Race week — Ironman California, Sacramento. Race Sunday October 18, 2026.", "wkHrs": ""}];
+const ZONES = [{"zone": "Z1", "name": "Recovery", "feel": "Full sentences, like walking", "hr": "<130bpm", "when": "Warm-ups, cool-downs, short Friday runs"}, {"zone": "Z2", "name": "Aerobic Base", "feel": "Full sentences, slight effort", "hr": "130–150bpm", "when": "80%+ of ALL training — long rides, runs, swims"}, {"zone": "Z3", "name": "Tempo", "feel": "Short sentences — mildly hard", "hr": "150–162bpm", "when": "Mid-ride surges, portions of tempo runs"}, {"zone": "Z4", "name": "Threshold / FTP", "feel": "3–4 words max — hard but sustainable", "hr": "162–172bpm", "when": "FTP bike intervals Tuesday, tempo run work sections"}, {"zone": "Z5", "name": "VO2 Max", "feel": "Can barely speak — very hard but controlled", "hr": "172–185bpm", "when": "Friday run intervals only. 3min reps. Max once every 3 weeks"}];
+const PHASES = [{"phase": "P1 · Foundation", "weeks": "Wks 1–9", "dates": "Mar 23–May 18", "focus": "100% Z2. Build all three disciplines from your current base. 3 swims/week. Recovery weeks 3, 6, 9.", "milestones": "800m→1800m swim · 4hr ride · long run to 100min · all Z2"}, {"phase": "P2 · Build 1", "weeks": "Wks 10–18", "dates": "May 25–Jul 20", "focus": "~88% Z2. Tempo runs Wed from Wk 10. Z5 intervals Fri from Wk 14. FTP bike Tue from Wk 16. Bricks Wks 10,14,17.", "milestones": "2000m→3000m swim · 7hr ride · long run 170min · FTP+tempo+Z5"}, {"phase": "P3 · Build 2", "weeks": "Wks 19–27", "dates": "Jul 27–Sep 21", "focus": "~82% Z2. All quality sessions advancing. Race swim 3800m in Wk 23. Long run 180min from Wk 20. Bricks Wks 20,23,26.", "milestones": "3800m race swim · 8hr ride · long run 3hrs · peak fitness"}, {"phase": "P4 · Peak", "weeks": "Wks 28–29", "dates": "Sep 28–Oct 11", "focus": "~80% Z2. Highest volume weeks. All quality sessions at max. Last big push before taper.", "milestones": "3800m swim · 8hr ride · 3hr long run · all quality sessions"}, {"phase": "P5 · Taper", "weeks": "Wks 30–32", "dates": "Oct 12–Nov 7", "focus": "3-week taper. Volume -35% then -55%. Short race-pace efforts. 3 swims maintained. Trust the fitness.", "milestones": "Volume drops · race-sharp efforts · fly to PCB · RACE DAY"}];
+
+const PHASE_COLORS = {
+  'P1': '#3b82f6', 'P2': '#f97316', 'P3': '#e8323c', 'P4': '#a855f7', 'P5': '#22c55e'
+};
+
+// Group by weeks
+const weeks = {};
+TRAINING_DATA.forEach(row => {
+  if (!weeks[row.wk]) weeks[row.wk] = [];
+  weeks[row.wk].push(row);
+});
+const weekKeys = Object.keys(weeks);
+let currentWeekIdx = 0;
+let completedSet = new Set();
+
+function togglePw() {
+  const inp = document.getElementById('pw-input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function tryLogin() {
+  const val = document.getElementById('pw-input').value;
+  if (val.trim().replace(/[\u2018\u2019]/g, "'") === PASSWORD) {
+    localStorage.setItem('im_auth', '1');
+    showApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') tryLogin();
+});
+
+function logout() {
+  localStorage.removeItem('im_auth');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pw-input').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Load completions
+  const saved = localStorage.getItem('im_completed');
+  if (saved) completedSet = new Set(JSON.parse(saved));
+
+  // Also seed from spreadsheet checked column
+  TRAINING_DATA.forEach((row, i) => {
+    if (row.checked && !completedSet.has(i)) completedSet.add(i);
+  });
+
+  renderPhases();
+  renderZones();
+  goToToday();
+  updateProgress();
+}
+
+function saveCompletions() {
+  localStorage.setItem('im_completed', JSON.stringify([...completedSet]));
+}
+
+function updateProgress() {
+  const total = TRAINING_DATA.length;
+  const done = completedSet.size;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-left').textContent = total - done;
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function getTypeColor(type) {
+  const t = type.toLowerCase();
+  if (t === 'rest') return 'type-rest';
+  if (t.includes('brick')) return 'type-brick';
+  if (t.includes('swim') && t.includes('bike') && t.includes('run')) return 'type-mixed';
+  if (t.includes('swim') && (t.includes('str') || t.includes('bike') || t.includes('run'))) return 'type-mixed';
+  if (t.includes('swim')) return 'type-swim';
+  if (t.includes('bike') || t.includes('ride')) return 'type-bike';
+  if (t.includes('run')) return 'type-run';
+  if (t.includes('str')) return 'type-str';
+  return 'type-mixed';
+}
+
+function isToday(dateStr) {
+  const today = new Date();
+  const d = new Date(dateStr);
+  return d.toDateString() === today.toDateString();
+}
+
+function findTodayWeekIdx() {
+  const today = new Date();
+  for (let i = 0; i < weekKeys.length; i++) {
+    const wk = weeks[weekKeys[i]];
+    for (const row of wk) {
+      const d = new Date(row.date);
+      if (d >= today) return i;
+    }
+  }
+  return weekKeys.length - 1;
+}
+
+function goToToday() {
+  currentWeekIdx = findTodayWeekIdx();
+  renderWeek();
+}
+
+function changeWeek(dir) {
+  currentWeekIdx = Math.max(0, Math.min(weekKeys.length - 1, currentWeekIdx + dir));
+  renderWeek();
+  window.scrollTo(0, 0);
+}
+
+function formatDetail(detail) {
+  if (!detail || detail === 'nan') return '';
+  return detail.replace(/\n/g, '<br><br>').replace(/
+/g, '<br><br>');
+}
+
+function getSummary(detail) {
+  if (!detail || detail === 'nan') return '';
+  const first = detail.split('\n')[0].split('
+')[0];
+  return first.length > 80 ? first.substring(0, 80) + '...' : first;
+}
+
+function toggleDay(cardEl) {
+  cardEl.classList.toggle('open');
+}
+
+function toggleComplete(idx, e) {
+  e.stopPropagation();
+  const checkEl = document.getElementById('check-' + idx);
+  if (completedSet.has(idx)) {
+    completedSet.delete(idx);
+    checkEl.classList.remove('done');
+    checkEl.textContent = '';
+    const card = document.getElementById('card-' + idx);
+    card.classList.remove('completed');
+  } else {
+    completedSet.add(idx);
+    checkEl.classList.add('done');
+    checkEl.textContent = '✓';
+    const card = document.getElementById('card-' + idx);
+    card.classList.add('completed');
+  }
+  saveCompletions();
+  updateProgress();
+}
+
+function renderWeek() {
+  const wk = weekKeys[currentWeekIdx];
+  const rows = weeks[wk];
+  const phase = rows[0].phase;
+  const note = rows.find(r => r.weekNote && r.weekNote !== 'nan')?.weekNote || '';
+  const hrs = rows.find(r => r.wkHrs && r.wkHrs !== 'nan')?.wkHrs || '';
+
+  document.getElementById('week-num').textContent = wk;
+  document.getElementById('week-phase').textContent = phase;
+  document.getElementById('prev-btn').disabled = currentWeekIdx === 0;
+  document.getElementById('next-btn').disabled = currentWeekIdx === weekKeys.length - 1;
+
+  const noteEl = document.getElementById('week-note');
+  if (note) { noteEl.style.display = 'block'; noteEl.textContent = '💡 ' + note; }
+  else { noteEl.style.display = 'none'; }
+
+  const hrsEl = document.getElementById('week-hrs');
+  if (hrs) hrsEl.innerHTML = `Week volume: <strong>${hrs}</strong>`;
+  else hrsEl.innerHTML = '';
+
+  const container = document.getElementById('days-container');
+  container.innerHTML = '';
+
+  const globalRows = TRAINING_DATA;
+
+  rows.forEach(row => {
+    const idx = globalRows.indexOf(row);
+    const done = completedSet.has(idx);
+    const today = isToday(row.date);
+    const typeClass = getTypeColor(row.type);
+    const summary = getSummary(row.detail);
+    const detail = formatDetail(row.detail);
+
+    const card = document.createElement('div');
+    card.className = 'day-card' + (today ? ' today' : '') + (done ? ' completed' : '');
+    card.id = 'card-' + idx;
+
+    card.innerHTML = `
+      <div class="day-card-header" onclick="toggleDay(this.parentElement)">
+        <div class="day-check ${done ? 'done' : ''}" id="check-${idx}" onclick="toggleComplete(${idx}, event)">${done ? '✓' : ''}</div>
+        <div class="day-name">${row.day}</div>
+        <div class="day-date">${row.date.replace(', 2026','').replace(', 2025','')}</div>
+        ${today ? '<div class="today-badge">TODAY</div>' : ''}
+        <div class="type-badge ${typeClass}">${row.type}</div>
+        <div class="day-summary">${summary}</div>
+        <div class="day-chevron">▼</div>
+      </div>
+      ${detail ? `
+      <div class="day-detail">
+        <div class="detail-text">${detail}</div>
+      </div>` : ''}
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function renderPhases() {
+  const container = document.getElementById('phases-container');
+  const phaseColors = ['#3b82f6','#f97316','#e8323c','#a855f7','#22c55e'];
+  PHASES.forEach((p, i) => {
+    const color = phaseColors[i] || '#888';
+    const pKey = p.phase.split(' ')[0];
+    container.innerHTML += `
+      <div class="phase-card">
+        <div class="phase-header">
+          <div class="phase-dot" style="background:${color}"></div>
+          <div class="phase-name">${p.phase}</div>
+          <div class="phase-meta">${p.weeks} · ${p.dates}</div>
+        </div>
+        <div class="phase-focus">${p.focus}</div>
+        <div class="phase-milestones"><strong>Key milestones:</strong> ${p.milestones}</div>
+      </div>`;
+  });
+}
+
+function renderZones() {
+  const tbody = document.getElementById('zone-tbody');
+  const zoneColors = {
+    'Z1': '#4a9eff', 'Z2': '#22c55e', 'Z3': '#eab308', 'Z4': '#f97316', 'Z5': '#e8323c'
+  };
+  ZONES.forEach(z => {
+    const color = zoneColors[z.zone] || '#888';
+    tbody.innerHTML += `
+      <tr>
+        <td><span class="zone-badge" style="background:${color}22;color:${color}">${z.zone}</span></td>
+        <td style="font-weight:600">${z.name}</td>
+        <td style="color:var(--muted)">${z.feel}</td>
+        <td style="color:var(--muted)">${z.hr}</td>
+        <td style="color:var(--muted)">${z.when}</td>
+      </tr>`;
+  });
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// Auto-login if session stored
+if (localStorage.getItem('im_auth') === '1') showApp();
+</script>
+</body>
+</html>
