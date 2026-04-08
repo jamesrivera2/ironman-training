@@ -201,6 +201,42 @@
     border-radius: 6px; display: inline-block;
   }
 
+  /* FULL SCHEDULE */
+  .sched-phase { margin-bottom: 24px; }
+  .sched-phase-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px;
+  }
+  .sched-phase-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .sched-phase-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .sched-week { margin-bottom: 10px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .sched-week-header {
+    background: var(--card2); padding: 8px 14px;
+    display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px;
+  }
+  .sched-week-header.sched-week-today { border-left: 3px solid var(--orange); }
+  .sched-wk-label { font-size: 13px; font-weight: 700; color: var(--text); }
+  .sched-wk-hrs { font-size: 11px; color: var(--orange); font-weight: 600; }
+  .sched-wk-note { font-size: 11px; color: #d4b800; flex-basis: 100%; margin-top: 2px; }
+  .sched-row { background: var(--card); border-top: 1px solid var(--border); transition: background 0.15s; }
+  .sched-row.sched-today { background: #1a1200; }
+  .sched-row.sched-done { opacity: 0.55; }
+  .sched-row-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer;
+  }
+  .sched-check {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; font-size: 11px;
+  }
+  .sched-check.done { background: var(--green); border-color: var(--green); color: white; }
+  .sched-day { font-weight: 600; font-size: 14px; width: 30px; flex-shrink: 0; }
+  .sched-date { font-size: 11px; color: var(--muted); width: 75px; flex-shrink: 0; }
+  .sched-summary { font-size: 12px; color: var(--muted); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sched-row.open .day-chevron { transform: rotate(180deg); }
+
   /* RESPONSIVE */
   @media (max-width: 600px) {
     .day-date { display: none; }
@@ -237,6 +273,7 @@
     <button class="tab-btn active" onclick="switchTab('plan', this)">📅 Training Plan</button>
     <button class="tab-btn" onclick="switchTab('phases', this)">📊 Phases</button>
     <button class="tab-btn" onclick="switchTab('zones', this)">⚡ Zones</button>
+    <button class="tab-btn" onclick="switchTab('schedule', this)">📋 Full Schedule</button>
   </div>
 
   <div class="content">
@@ -276,6 +313,11 @@
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:13px;color:var(--muted);">
         <strong style="color:var(--text);">Key principle:</strong> 80%+ of all sessions should be Z1–Z2. If in doubt, go easier.
       </div>
+    </div>
+
+    <!-- FULL SCHEDULE TAB -->
+    <div id="tab-schedule" class="tab-panel">
+      <div id="schedule-container"></div>
     </div>
   </div>
 </div>
@@ -502,11 +544,110 @@ function renderZones() {
   });
 }
 
+function renderSchedule() {
+  const container = document.getElementById('schedule-container');
+  if (container.dataset.rendered === '1') return;
+  container.dataset.rendered = '1';
+
+  // Group weeks into phases
+  let lastPhase = null;
+  let phaseDiv = null;
+
+  weekKeys.forEach(wk => {
+    const rows = weeks[wk];
+    const phase = rows[0].phase;
+    const note = rows.find(r => r.weekNote && r.weekNote !== 'nan')?.weekNote || '';
+    const hrs = rows.find(r => r.wkHrs && r.wkHrs !== 'nan')?.wkHrs || '';
+
+    if (phase !== lastPhase) {
+      lastPhase = phase;
+      const pKey = phase.split(' ')[0];
+      const color = PHASE_COLORS[pKey] || '#888';
+      phaseDiv = document.createElement('div');
+      phaseDiv.className = 'sched-phase';
+      phaseDiv.innerHTML = '<div class="sched-phase-header"><span class="sched-phase-dot" style="background:' + color + '"></span><span class="sched-phase-title">' + phase + '</span></div>';
+      container.appendChild(phaseDiv);
+    }
+
+    const wkBlock = document.createElement('div');
+    wkBlock.className = 'sched-week';
+
+    const hasToday = rows.some(r => isToday(r.date));
+    const wkHeader = document.createElement('div');
+    wkHeader.className = 'sched-week-header' + (hasToday ? ' sched-week-today' : '');
+    wkHeader.innerHTML =
+      '<span class="sched-wk-label">' + wk + '</span>' +
+      (hrs ? '<span class="sched-wk-hrs">' + hrs + '</span>' : '') +
+      (note ? '<span class="sched-wk-note">💡 ' + note + '</span>' : '');
+    wkBlock.appendChild(wkHeader);
+
+    rows.forEach(row => {
+      const idx = TRAINING_DATA.indexOf(row);
+      const done = completedSet.has(idx);
+      const today = isToday(row.date);
+      const typeClass = getTypeColor(row.type);
+      const summary = getSummary(row.detail);
+      const detail = formatDetail(row.detail);
+
+      const rowEl = document.createElement('div');
+      rowEl.className = 'sched-row' + (today ? ' sched-today' : '') + (done ? ' sched-done' : '');
+      rowEl.id = 'sched-card-' + idx;
+      rowEl.innerHTML =
+        '<div class="sched-row-header" onclick="toggleSchedRow(this.parentElement)">' +
+          '<div class="sched-check ' + (done ? 'done' : '') + '" id="sched-check-' + idx + '" onclick="toggleSchedComplete(' + idx + ', event)">' + (done ? '✓' : '') + '</div>' +
+          '<div class="sched-day">' + row.day + '</div>' +
+          '<div class="sched-date">' + row.date.replace(', 2026','').replace(', 2025','') + '</div>' +
+          (today ? '<div class="today-badge">TODAY</div>' : '') +
+          '<div class="type-badge ' + typeClass + '">' + row.type + '</div>' +
+          '<div class="sched-summary">' + summary + '</div>' +
+          '<div class="day-chevron">▼</div>' +
+        '</div>' +
+        (detail ? '<div class="day-detail"><div class="detail-text">' + detail + '</div></div>' : '');
+
+      wkBlock.appendChild(rowEl);
+    });
+
+    phaseDiv.appendChild(wkBlock);
+  });
+
+  // Scroll today into view
+  setTimeout(() => {
+    const todayEl = container.querySelector('.sched-today');
+    if (todayEl) todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+
+function toggleSchedRow(cardEl) {
+  cardEl.classList.toggle('open');
+}
+
+function toggleSchedComplete(idx, e) {
+  e.stopPropagation();
+  const checkEl = document.getElementById('sched-check-' + idx);
+  const planCheckEl = document.getElementById('check-' + idx);
+  if (completedSet.has(idx)) {
+    completedSet.delete(idx);
+    checkEl.classList.remove('done'); checkEl.textContent = '';
+    if (planCheckEl) { planCheckEl.classList.remove('done'); planCheckEl.textContent = ''; }
+    document.getElementById('sched-card-' + idx)?.classList.remove('sched-done');
+    document.getElementById('card-' + idx)?.classList.remove('completed');
+  } else {
+    completedSet.add(idx);
+    checkEl.classList.add('done'); checkEl.textContent = '✓';
+    if (planCheckEl) { planCheckEl.classList.add('done'); planCheckEl.textContent = '✓'; }
+    document.getElementById('sched-card-' + idx)?.classList.add('sched-done');
+    document.getElementById('card-' + idx)?.classList.add('completed');
+  }
+  saveCompletions();
+  updateProgress();
+}
+
 function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'schedule') renderSchedule();
 }
 
 showApp();
