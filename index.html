@@ -375,14 +375,12 @@ function changeWeek(dir) {
 
 function formatDetail(detail) {
   if (!detail || detail === 'nan') return '';
-  return detail.replace(/\n/g, '<br><br>').replace(/
-/g, '<br><br>');
+  return detail.replace(/\n/g, '<br><br>').replace(/\n/gg, '<br><br>');
 }
 
 function getSummary(detail) {
   if (!detail || detail === 'nan') return '';
-  const first = detail.split('\n')[0].split('
-')[0];
+  const first = detail.split('\n')[0].split('\n')[0];
   return first.length > 80 ? first.substring(0, 80) + '...' : first;
 }
 
